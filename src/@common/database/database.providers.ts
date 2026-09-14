@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-import { Permission } from '../../entities/permissions.entity';
-import { Role } from '../../entities/role.entity';
-import { User } from '../../entities/user.entity';
+import { Permission } from '../entities/permissions.entity';
+import { Role } from '../entities/role.entity';
+import { User } from '../entities/user.entity';
 
 export const DATASOURCE_TOKEN = 'DATA_SOURCE';
 

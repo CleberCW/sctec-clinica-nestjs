@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { DATASOURCE_TOKEN } from '../@common/database/database.providers';
-import { Role } from '../entities/role.entity';
+import { Role } from '../@common/entities/role.entity';
 
 export const ROLE_TYPEORM_REPOSITORY = 'ROLE_REPOSITORY';
 

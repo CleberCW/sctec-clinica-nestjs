@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import type { Role, RoleName } from '../entities/role.entity.ts';
+import type { Role, RoleName } from '../@common/entities/role.entity.js';
 import { Inject, Injectable } from '@nestjs/common';
 import { ROLE_TYPEORM_REPOSITORY } from './role.providers.js';
 

@@ -1,4 +1,4 @@
-import type { Role } from '../../entities/role.entity.ts';
+import type { Role } from '../../@common/entities/role.entity.js';
 
 export interface CreateUserRepositoryInput {
   firstName: string;

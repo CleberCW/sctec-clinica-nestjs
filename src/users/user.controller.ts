@@ -24,8 +24,6 @@ export class UserController {
   @Get('/me')
   @UseGuards(JwtGuard)
   getInfo(@CurrentUser() user: AuthUserDto) {
-    console.log('ENTROU');
-    console.log(user);
     return this.userService.getUser(user.email as string);
   }
 }

@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { DATASOURCE_TOKEN } from '../@common/database/database.providers';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/@common/entities/user.entity';
 
 export const USER_TYPEORM_REPOSITORY = 'USER_REPOSITORY';
 

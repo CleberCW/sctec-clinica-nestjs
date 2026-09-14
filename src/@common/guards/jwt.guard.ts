@@ -25,7 +25,6 @@ export class JwtGuard implements CanActivate {
     if (bearerString !== 'Bearer') {
       throw new UnauthorizedException('Invalid token provided');
     }
-    console.log('TOKEN RECEBIDO:', token);
 
     return token;
   }

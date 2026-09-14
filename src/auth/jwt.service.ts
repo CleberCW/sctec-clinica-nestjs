@@ -68,8 +68,6 @@ export class JwtService {
       decipher.final(),
     ]);
 
-    console.log('JWT DESCRIPTOGRAFADO:', decrypted.toString('utf8'));
-
     return decrypted.toString('utf8');
   }
 

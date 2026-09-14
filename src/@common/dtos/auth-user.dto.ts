@@ -1,5 +1,5 @@
 import { JwtPayload } from 'jsonwebtoken';
-import { RoleName } from 'src/entities/role.entity';
+import { RoleName } from 'src/@common/entities/role.entity';
 
 export interface AuthUserDto extends JwtPayload {
   data: {
