@@ -39,14 +39,32 @@ Também foram implementados exception filters para centralizar o tratamento das 
 
 O projeto utiliza PostgreSQL com TypeORM e migrations.
 
-As migrations iniciais criam a estrutura do banco e populam as roles e permissions necessárias para o funcionamento da aplicação.
+### PostgreSQL com Docker
 
-Antes de iniciar a API, configure o arquivo `.env` e execute as migrations:
+O PostgreSQL utilizado pela aplicação deve ser executado através do `docker-compose.yml` presente no projeto.
+
+Após configurar o arquivo `.env`, suba o banco com:
+
+```bash
+docker compose up -d
+```
+
+O container PostgreSQL deve estar em execução antes de executar as migrations ou utilizar a API.
+
+### Configuração inicial do banco
+
+As migrations são responsáveis por criar e atualizar a estrutura do banco. Os dados iniciais necessários para o funcionamento da aplicação são inseridos separadamente através do seed.
+
+Para uma instalação inicial, siga esta ordem:
 
 ```bash
 npm install
+docker compose up -d
 npm run migration:run
+npm run seed
 ```
+
+O seed cria as permissions, roles e o usuário administrador inicial. **A API deve ser inicializada somente após a execução do seed**, pois o sistema de autenticação e autorização depende desses dados.
 
 O usuário administrador inicial utiliza:
 
@@ -55,15 +73,7 @@ INITIAL_ADMIN_EMAIL=admin@email.com
 INITIAL_ADMIN_PASSWORD=sua_senha
 ```
 
-Essas variáveis devem estar definidas antes da inicialização do processo de criação do usuário administrador.
-
-## PostgreSQL com Docker
-
-O projeto possui um `docker-compose.yml` para subir o PostgreSQL:
-
-```bash
-docker compose up -d
-```
+Essas variáveis devem estar definidas antes da execução de `npm run seed`.
 
 ## Configuração
 
@@ -80,6 +90,8 @@ INITIAL_ADMIN_PASSWORD=sua_senha
 ```
 
 ## Execução
+
+Após subir o PostgreSQL e concluir as migrations e o seed, inicie a aplicação.
 
 Desenvolvimento:
 
