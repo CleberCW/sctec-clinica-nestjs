@@ -17,6 +17,7 @@ export class UserService {
   async registerUser(userData: RegisterUserDto) {
     const hashPassword = await hash(userData.password, 10);
 
+    // Adiciona user somente com role 'user' por enquanto (talvez trazer todas as roles de uma vez?)
     const role = await this.roleRepository.findByName('user');
 
     if (!role) {

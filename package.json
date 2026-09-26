@@ -19,9 +19,11 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node src/database/seed.ts",
-    "migration:generate": "npm run typeorm -- migration:generate sql/migrations/UpdateSchema -d src/database.ts",
+    "typeorm": "tsx ./node_modules/typeorm/cli.js",
+    "migration:generate": "npm run typeorm -- migration:generate sql/migrations/migration -d src/database.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/database.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/database.ts"
+    "migration:revert": "npm run typeorm -- migration:revert -d src/database.ts",
+    "migration:new": "npm run typeorm -- migration:create sql/migrations/migration"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -62,7 +64,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^6.0.0",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "tsx": "^4.22.3"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -70,7 +73,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": "./",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"

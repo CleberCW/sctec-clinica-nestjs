@@ -24,4 +24,6 @@ export class Permission extends BaseEntity {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   createdAt!: Date;
+
+  //Criar update e deleted at
 }

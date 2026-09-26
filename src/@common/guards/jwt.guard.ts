@@ -40,4 +40,6 @@ export class JwtGuard implements CanActivate {
     this.setPayload(context, payload);
     return true;
   }
+
+  // Aqui fazer checar roles também, não só o jwt
 }

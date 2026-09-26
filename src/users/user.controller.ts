@@ -10,8 +10,11 @@ import type { AuthUserDto } from 'src/@common/dtos/auth-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  //Dtos de retono: aqui ou no service?
+
   @Post('/register')
   @UseGuards(JwtGuard)
+  // Precisa colcoar para checar role também - Decorators
   handleRegister(@Body() dto: RegisterUserDto) {
     return this.userService.registerUser(dto);
   }

@@ -9,6 +9,9 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+  app.enableCors();
+
+  // Precisa fazer validação da env
   await app.listen(process.env.PORT ?? 3000);
 }
 

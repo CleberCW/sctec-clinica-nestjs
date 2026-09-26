@@ -20,6 +20,8 @@ const permissions = [
   'role:delete',
 ];
 
+// Eliminar a fazer tudo via migration?
+
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.createApplicationContext(AppModule);
 

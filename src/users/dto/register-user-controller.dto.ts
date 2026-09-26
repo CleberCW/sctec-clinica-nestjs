@@ -53,5 +53,6 @@ export class RegisterUserDto {
     message:
       'A senha deve conter pelo menos 1 letra maiúscula, 1 minúscula e 1 número ou caractere especial.',
   })
+  // Ou só usar @isStrongPassword?
   password!: string;
 }

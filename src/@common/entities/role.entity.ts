@@ -10,7 +10,7 @@ import {
 import { Permission } from './permissions.entity';
 import { User } from './user.entity';
 
-const ROLE_NAMES = ['admin', 'user', 'owner'] as const;
+export const ROLE_NAMES = ['admin', 'user', 'owner'] as const;
 export type RoleName = (typeof ROLE_NAMES)[number];
 
 @Entity()
@@ -39,4 +39,6 @@ export class Role extends BaseEntity {
     select: false,
   })
   createdAt!: Date;
+
+  //Criar update e deleted at
 }
