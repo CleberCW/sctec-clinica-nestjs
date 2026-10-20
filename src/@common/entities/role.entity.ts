@@ -3,42 +3,27 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
-import { Permission } from './permissions.entity';
 import { User } from './user.entity';
 
-export const ROLE_NAMES = ['admin', 'user', 'owner'] as const;
+export const ROLE_NAMES = ['admin', 'secretary', 'doctor'] as const;
 export type RoleName = (typeof ROLE_NAMES)[number];
 
-@Entity()
-export class Role extends BaseEntity {
+@Entity('roles')
+@Unique('UQ_ROLE_NAME', ['name'])
+export class Role {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToMany(() => User, (user) => user.roles)
-  users!: User[];
-
-  @ManyToMany(() => Permission, (permission) => permission.roles, {
-    onDelete: 'CASCADE',
-  })
-  @JoinTable()
-  permissions!: Permission[];
-
-  @Column({
-    type: 'enum',
-    enum: ROLE_NAMES,
-  })
+  @Column({ type: 'enum', enum: ROLE_NAMES })
   name!: RoleName;
 
-  @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    select: false,
-  })
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  //Criar update e deleted at
+  @ManyToMany(() => User, (user) => user.roles)
+  users!: User[];
 }
