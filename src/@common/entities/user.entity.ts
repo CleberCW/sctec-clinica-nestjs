@@ -5,38 +5,56 @@ import {
   JoinTable,
   ManyToMany,
   CreateDateColumn,
-  Unique,
+  DeleteDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  Index,
 } from 'typeorm';
 import { Role } from './role.entity';
+import { Doctor } from './doctor.entity';
 
-@Entity()
-@Unique('UQ_USER_EMAIL', ['email'])
+@Entity('users')
+@Index('UQ_USER_EMAIL', ['email'], {
+  unique: true,
+  where: '"deletedAt" IS NULL',
+})
 export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'varchar' })
-  firstName!: string;
-
-  @Column({ type: 'varchar' })
-  lastName!: string;
-
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', length: 255 })
   email!: string;
 
-  @Column({ type: 'varchar', select: false })
-  hashedPassword!: string;
+  @Column({ type: 'varchar', length: 255, select: false })
+  password!: string;
 
-  @ManyToMany(() => Role, (role) => role.users, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+  @Column({ type: 'varchar', length: 255 })
+  name!: string;
+
+  @ManyToMany(() => Role, (role) => role.users) // OnDelete: 'CASCADE', OnUpdate: 'CASCADE' já são padrão
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'roleId', referencedColumnName: 'id' },
   })
-  @JoinTable()
   roles!: Role[];
 
+  @OneToOne(() => Doctor, (doctor) => doctor.user)
+  doctor?: Doctor | null;
+
   @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    type: 'timestamptz',
   })
   createdAt!: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamptz',
+  })
+  updatedAt!: Date | null;
+
+  @DeleteDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+  })
+  deletedAt!: Date | null;
 }
