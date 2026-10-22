@@ -17,8 +17,8 @@ export class UserService {
   async registerUser(userData: RegisterUserDto) {
     const hashPassword = await hash(userData.password, 10);
 
-    // Adiciona user somente com role 'user' por enquanto (talvez trazer todas as roles de uma vez?)
-    const role = await this.roleRepository.findByName('user');
+    // Adiciona user somente com role 'admin' por enquanto (talvez trazer todas as roles de uma vez?)
+    const role = await this.roleRepository.findByName('admin');
 
     if (!role) {
       throw new Error('Default user role not found');
@@ -34,8 +34,7 @@ export class UserService {
 
     return {
       id: dbUser.id,
-      firstName: dbUser.firstName,
-      lastName: dbUser.lastName,
+      name: dbUser.name,
       email: dbUser.email,
       roles: dbUser.roles,
       createdAt: dbUser.createdAt,
@@ -49,10 +48,7 @@ export class UserService {
       throw new UnauthorizedException();
     }
 
-    const passwordMatches = await compare(
-      loginData.password,
-      user.hashedPassword,
-    );
+    const passwordMatches = await compare(loginData.password, user.password);
 
     if (!passwordMatches) {
       throw new UnauthorizedException();
@@ -81,7 +77,7 @@ export class UserService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { hashedPassword, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = user;
 
     return userWithoutPassword;
   }
