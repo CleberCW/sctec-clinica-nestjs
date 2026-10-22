@@ -19,14 +19,7 @@ export class UserTypeORMRepository implements UserRepository {
   async save(user: CreateUserRepositoryInput): Promise<User> {
     const dbUser = await this.repository.save(user);
 
-    return {
-      id: dbUser.id,
-      firstName: dbUser.firstName,
-      lastName: dbUser.lastName,
-      email: dbUser.email,
-      roles: dbUser.roles,
-      createdAt: dbUser.createdAt,
-    } as User;
+    return dbUser;
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
@@ -36,10 +29,9 @@ export class UserTypeORMRepository implements UserRepository {
       },
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
-        hashedPassword: true,
+        password: true,
         createdAt: true,
       },
       relations: {

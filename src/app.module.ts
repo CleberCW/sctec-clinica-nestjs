@@ -5,9 +5,11 @@ import { BadRequestExceptionFilter } from './@common/filters/bad-request-excepti
 import { HttpExceptionFilter } from './@common/filters/http-exception.filter';
 import { DatabaseModule } from './@common/database/database.modules';
 import { UserModule } from './users/user.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [DatabaseModule, UserModule],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_FILTER,
