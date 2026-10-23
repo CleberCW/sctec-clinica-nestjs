@@ -1,11 +1,10 @@
 import { Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from 'src/@common/entities/user.entity';
-import { CreateUserRepositoryInput } from './dto/create-user-repository.dto';
 import { USER_TYPEORM_REPOSITORY } from './user.providers';
 
 export abstract class UserRepository {
-  abstract save(user: CreateUserRepositoryInput): Promise<User>;
+  abstract createAndSaveUser(userData: Partial<User>): Promise<User>;
   abstract getUserByEmail(email: string): Promise<User | null>;
 }
 
@@ -16,10 +15,10 @@ export class UserTypeORMRepository implements UserRepository {
     private readonly repository: Repository<User>,
   ) {}
 
-  async save(user: CreateUserRepositoryInput): Promise<User> {
-    const dbUser = await this.repository.save(user);
+  async createAndSaveUser(userData: Partial<User>): Promise<User> {
+    const newUser = this.repository.create(userData);
 
-    return dbUser;
+    return await this.repository.save(newUser);
   }
 
   async getUserByEmail(email: string): Promise<User | null> {

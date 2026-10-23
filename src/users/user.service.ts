@@ -1,72 +1,35 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { compare, hash } from 'bcrypt';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { hash } from 'bcrypt';
 import { UserRepository } from './user.repository';
-import { RegisterUserDto } from './dto/register-user-controller.dto';
+import { UserRegisterDto } from './dto/user-register.dto';
 import { RoleRepository } from './role.repository';
-import { LoginDto } from './dto/login.dto';
-import { JwtService } from 'src/auth/jwt.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly roleRepository: RoleRepository,
-    private readonly jwtService: JwtService,
   ) {}
 
-  async registerUser(userData: RegisterUserDto) {
-    const hashPassword = await hash(userData.password, 10);
+  async registerUser(userData: UserRegisterDto) {
+    const hashedPassword = await hash(userData.password, 10);
 
-    // Adiciona user somente com role 'admin' por enquanto (talvez trazer todas as roles de uma vez?)
-    const role = await this.roleRepository.findByName('admin');
+    const roles = await this.roleRepository.findByNames(userData.roles);
 
-    if (!role) {
-      throw new Error('Default user role not found');
+    if (!roles || roles.length !== userData.roles.length) {
+      throw new BadRequestException(
+        'Uma ou mais roles informadas não existem no sistema.',
+      );
     }
 
-    const dbUser = await this.userRepository.save({
-      firstName: userData.firstName,
-      lastName: userData.lastName,
+    const dbUser = await this.userRepository.createAndSaveUser({
+      name: userData.firstName,
       email: userData.email,
-      hashedPassword: hashPassword,
-      roles: [role],
+      password: hashedPassword,
+      roles: roles,
     });
 
-    return {
-      id: dbUser.id,
-      name: dbUser.name,
-      email: dbUser.email,
-      roles: dbUser.roles,
-      createdAt: dbUser.createdAt,
-    };
-  }
-
-  async loginUser(loginData: LoginDto) {
-    const user = await this.userRepository.getUserByEmail(loginData.email);
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    const passwordMatches = await compare(loginData.password, user.password);
-
-    if (!passwordMatches) {
-      throw new UnauthorizedException();
-    }
-
-    const payload = {
-      email: user.email,
-      role: [...user.roles.map((role) => role.name)],
-    };
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      throw new Error('JWT secret não encontrado');
-    }
-
-    const token = this.jwtService.sign(payload);
-
-    return { 'Access Token': token };
+    return dbUser;
   }
 
   async getUser(email: string) {
@@ -76,9 +39,6 @@ export class UserService {
       return null;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-
-    return userWithoutPassword;
+    return user;
   }
 }
