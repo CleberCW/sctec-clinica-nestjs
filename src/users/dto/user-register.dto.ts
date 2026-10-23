@@ -1,12 +1,15 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsString,
+  IsStrongPassword,
   Matches,
-  MinLength,
 } from 'class-validator';
+import { ROLES } from 'src/@common/entities/role.entity';
+import type { RoleEnum } from 'src/@common/entities/role.entity';
 
-export class RegisterUserDto {
+export class UserRegisterDto {
   @IsString({
     message: 'O primeiro nome deve ser um texto.',
   })
@@ -40,19 +43,21 @@ export class RegisterUserDto {
   })
   email!: string;
 
-  @IsString({
-    message: 'A senha deve ser um texto.',
-  })
-  @IsNotEmpty({
-    message: 'A senha não pode ser vazia.',
-  })
-  @MinLength(8, {
-    message: 'A senha deve ter no mínimo 8 caracteres.',
-  })
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message:
-      'A senha deve conter pelo menos 1 letra maiúscula, 1 minúscula e 1 número ou caractere especial.',
-  })
-  // Ou só usar @isStrongPassword?
+  @IsStrongPassword(
+    {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    },
+    {
+      message:
+        'A senha deve conter pelo menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial.',
+    },
+  )
   password!: string;
+
+  @IsEnum(ROLES)
+  roles!: RoleEnum[];
 }

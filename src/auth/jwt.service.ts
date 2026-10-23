@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { sign, verify } from 'jsonwebtoken';
 
 @Injectable()
 export class JwtService {
+  constructor(private readonly configService: ConfigService) {}
   private getEncryptionKey(): Buffer {
-    const key = process.env.JWT_ENCRYPTION_KEY;
+    const key = this.configService.get<string>('JWT_ENCRYPTION_KEY');
 
     if (!key) {
       throw new Error('JWT_ENCRYPTION_KEY not set');
@@ -72,11 +74,13 @@ export class JwtService {
   }
 
   sign(payload: object) {
-    if (!process.env.JWT_SECRET) {
+    const secret = this.configService.get<string>('JWT_SECRET');
+
+    if (!secret) {
       throw new Error('JWT_SECRET not set');
     }
 
-    const token = sign(payload, process.env.JWT_SECRET, {
+    const token = sign(payload, secret, {
       expiresIn: '8h',
       issuer: 'sctec-nestjs',
     });
@@ -85,13 +89,15 @@ export class JwtService {
   }
 
   verify(encryptedToken: string) {
-    if (!process.env.JWT_SECRET) {
+    const secret = this.configService.get<string>('JWT_SECRET');
+
+    if (!secret) {
       throw new Error('JWT_SECRET not set');
     }
 
     const decryptedToken = this.decrypt(encryptedToken);
 
-    return verify(decryptedToken, process.env.JWT_SECRET, {
+    return verify(decryptedToken, secret, {
       issuer: 'sctec-nestjs',
     });
   }

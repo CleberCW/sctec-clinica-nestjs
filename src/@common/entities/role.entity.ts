@@ -8,8 +8,13 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 
-export const ROLE_NAMES = ['admin', 'secretary', 'doctor'] as const;
-export type RoleName = (typeof ROLE_NAMES)[number];
+export const ROLES = {
+  ADMIN: 'ADMIN',
+  SECRETARY: 'SECRETARY',
+  DOCTOR: 'DOCTOR',
+} as const;
+
+export type RoleEnum = (typeof ROLES)[keyof typeof ROLES];
 
 @Entity('roles')
 @Unique('UQ_ROLE_NAME', ['name'])
@@ -17,8 +22,8 @@ export class Role {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'enum', enum: ROLE_NAMES })
-  name!: RoleName;
+  @Column({ type: 'enum', enum: Object.values(ROLES) })
+  name!: RoleEnum;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
