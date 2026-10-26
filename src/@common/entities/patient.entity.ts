@@ -16,11 +16,8 @@ export class Patient {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'varchar', length: 100 })
-  firstName!: string;
-
-  @Column({ type: 'varchar', length: 100 })
-  lastName!: string;
+  @Column({ type: 'varchar', length: 255 })
+  name!: string;
 
   @Column({ type: 'char', length: 11 })
   cpf!: string;

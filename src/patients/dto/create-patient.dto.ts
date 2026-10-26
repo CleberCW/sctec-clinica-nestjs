@@ -13,15 +13,8 @@ export class CreatePatientDto {
     message: 'O nome deve ser um texto.',
   })
   @IsNotEmpty({ message: 'O nome não pode ser vazio.' })
-  @MaxLength(50, { message: 'O nome deve ter no máximo 50 caracteres.' })
-  firstName!: string;
-
-  @IsString({
-    message: 'O sobrenome deve ser um texto.',
-  })
-  @IsNotEmpty({ message: 'O sobrenome não pode ser vazio.' })
-  @MaxLength(100, { message: 'O sobrenome deve ter no máximo 50 caracteres.' })
-  lastName!: string;
+  @MaxLength(255, { message: 'O nome deve ter no máximo 255 caracteres.' })
+  name!: string;
 
   @IsNotEmpty({ message: 'O CPF não pode ser vazio.' })
   @Matches(/^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$/, {
