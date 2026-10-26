@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 
 import { APP_FILTER } from '@nestjs/core';
-import { BadRequestExceptionFilter } from './@common/filters/bad-request-exception.filter';
 import { HttpExceptionFilter } from './@common/filters/http-exception.filter';
 import { DatabaseModule } from './@common/database/database.modules';
 import { UserModule } from './users/user.module';
@@ -11,6 +10,7 @@ import z from 'zod';
 import { AdminSeedModule } from './database/seeders/admin-seed.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from './auth/jwt.module';
+import { PatientsModule } from './patients/patients.module';
 
 @Module({
   imports: [
@@ -34,16 +34,13 @@ import { JwtModule } from './auth/jwt.module';
         INITIAL_ADMIN_PASSWORD: z.string().min(6),
       }),
     }),
+    PatientsModule,
   ],
   controllers: [AppController],
   providers: [
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: BadRequestExceptionFilter,
     },
   ],
 })

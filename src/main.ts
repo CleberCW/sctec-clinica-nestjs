@@ -1,14 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { DomainError, ERROR_CODE } from './@common/errors/domain.error';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      transform: true,
+      exceptionFactory: (errors) => {
+        const messages = errors.flatMap((error) =>
+          Object.values(error.constraints ?? {}),
+        );
+
+        return new DomainError(messages, ERROR_CODE.DADOS_INVALIDOS);
+      },
     }),
   );
+
   app.enableCors();
 
   app.enableVersioning({

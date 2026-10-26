@@ -1,12 +1,14 @@
 import { Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { User } from 'src/@common/entities/user.entity';
-import { USER_TYPEORM_REPOSITORY } from './user.providers';
 
 export abstract class UserRepository {
   abstract createAndSaveUser(userData: Partial<User>): Promise<User>;
   abstract getUserByEmail(email: string): Promise<User | null>;
 }
+
+export const USER_TYPEORM_REPOSITORY = 'USER_TYPEORM_REPOSITORY';
+export const USER_REPOSITORY = 'USER_REPOSITORY';
 
 @Injectable()
 export class UserTypeORMRepository implements UserRepository {

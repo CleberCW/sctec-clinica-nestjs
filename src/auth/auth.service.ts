@@ -24,8 +24,9 @@ export class AuthService {
     }
 
     const payload = {
+      sub: String(user.id),
       email: user.email,
-      role: [...user.roles.map((role) => role.name)],
+      roles: user.roles.map((role) => role.name),
     };
     const secret = process.env.JWT_SECRET;
 
