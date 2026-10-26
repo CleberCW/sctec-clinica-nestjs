@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
-import { sign, verify } from 'jsonwebtoken';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
 
 @Injectable()
 export class JwtService {
@@ -82,23 +82,25 @@ export class JwtService {
 
     const token = sign(payload, secret, {
       expiresIn: '8h',
-      issuer: 'sctec-nestjs',
+      issuer: this.configService.getOrThrow<string>('JWT_ISSUER'),
     });
 
     return this.encrypt(token);
   }
 
-  verify(encryptedToken: string) {
-    const secret = this.configService.get<string>('JWT_SECRET');
-
-    if (!secret) {
-      throw new Error('JWT_SECRET not set');
-    }
+  verify(encryptedToken: string): JwtPayload {
+    const secret = this.configService.getOrThrow<string>('JWT_SECRET');
 
     const decryptedToken = this.decrypt(encryptedToken);
 
-    return verify(decryptedToken, secret, {
-      issuer: 'sctec-nestjs',
+    const payload = verify(decryptedToken, secret, {
+      issuer: this.configService.getOrThrow<string>('JWT_ISSUER'),
     });
+
+    if (typeof payload === 'string') {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
+    return payload;
   }
 }

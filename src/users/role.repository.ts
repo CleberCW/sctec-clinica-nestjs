@@ -1,11 +1,13 @@
 import { In, Repository } from 'typeorm';
 import type { Role, RoleEnum } from '../@common/entities/role.entity.js';
 import { Inject, Injectable } from '@nestjs/common';
-import { ROLE_TYPEORM_REPOSITORY } from './role.providers.js';
 
 export abstract class RoleRepository {
   abstract findByNames(role: RoleEnum[]): Promise<Role[] | null>;
 }
+
+export const ROLE_TYPEORM_REPOSITORY = 'ROLE_TYPEORM_REPOSITORY';
+export const ROLE_REPOSITORY = 'ROLE_REPOSITORY';
 
 @Injectable()
 export class RoleTypeOrmRepository implements RoleRepository {
