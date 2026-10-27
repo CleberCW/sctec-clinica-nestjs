@@ -23,7 +23,7 @@ export class UserService {
     }
 
     const dbUser = await this.userRepository.createAndSaveUser({
-      name: userData.firstName,
+      name: userData.name,
       email: userData.email,
       password: hashedPassword,
       roles: roles,
