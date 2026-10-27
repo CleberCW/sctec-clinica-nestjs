@@ -30,8 +30,7 @@ export class AdminSeedService implements OnApplicationBootstrap {
 
     if (!adminExists) {
       const user = await this.userService.registerUser({
-        firstName: 'Admin',
-        lastName: 'Mestre',
+        name: 'Admin',
         email: adminEmail,
         password: adminPassword,
         roles: [ROLES.ADMIN],

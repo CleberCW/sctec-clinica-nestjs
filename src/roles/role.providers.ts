@@ -2,8 +2,8 @@ import { DATASOURCE_TOKEN } from 'src/@common/database/database.providers';
 import { Role } from 'src/@common/entities/role.entity';
 import { DataSource } from 'typeorm';
 import {
+  ROLE_REPOSITORY,
   ROLE_TYPEORM_REPOSITORY,
-  RoleRepository,
   RoleTypeOrmRepository,
 } from './role.repository';
 
@@ -14,7 +14,7 @@ export const roleProviders = [
     inject: [DATASOURCE_TOKEN],
   },
   {
-    provide: RoleRepository,
+    provide: ROLE_REPOSITORY,
     useClass: RoleTypeOrmRepository,
   },
 ];

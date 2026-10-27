@@ -47,6 +47,6 @@ export class UserRegisterDto {
   )
   password!: string;
 
-  @IsEnum(ROLES)
+  @IsEnum(ROLES, { each: true })
   roles!: RoleEnum[];
 }

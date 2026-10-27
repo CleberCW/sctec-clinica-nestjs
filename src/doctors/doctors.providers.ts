@@ -5,7 +5,7 @@ import {
   DoctorsRepository,
   DoctorsTypeORMRepository,
 } from './doctors.repository';
-import { Doctor } from './entities/doctor.entity';
+import { Doctor } from 'src/@common/entities/doctor.entity';
 
 export const doctorsProviders = [
   {

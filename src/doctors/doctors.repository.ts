@@ -1,14 +1,24 @@
-import { DataSource, Repository } from 'typeorm';
+import {
+  DataSource,
+  ILike,
+  IsNull,
+  QueryFailedError,
+  Repository,
+} from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import { Doctor } from './entities/doctor.entity';
 import { User } from 'src/@common/entities/user.entity';
 import { DATASOURCE_TOKEN } from 'src/@common/database/database.providers';
+import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
+import { Doctor } from 'src/@common/entities/doctor.entity';
+import { GetDoctorsDto } from './dto/get-doctors.dto';
 
 export abstract class DoctorsRepository {
   abstract createWithUser(
     userData: Partial<User>,
     doctorData: Partial<Doctor>,
   ): Promise<Doctor>;
+  abstract find(query: GetDoctorsDto): Promise<Doctor[]>;
+  abstract findOne(filters: { id?: number }): Promise<Doctor | null>;
 }
 
 export const DOCTORS_TYPEORM_REPOSITORY = 'DOCTOR_REPOSITORY';
@@ -23,22 +33,81 @@ export class DoctorsTypeORMRepository implements DoctorsRepository {
     private readonly dataSource: DataSource,
   ) {}
 
+  private handleDatabaseError(error: unknown): never {
+    if (error instanceof QueryFailedError) {
+      const driverError = error.driverError as {
+        code?: string;
+        constraint?: string;
+      };
+
+      if (driverError.code === '23505') {
+        switch (driverError.constraint) {
+          case 'UQ_USER_EMAIL':
+            throw new DomainError(
+              'E-mail já cadastrado.',
+              ERROR_CODE.EMAIL_JA_CADASTRADO,
+            );
+
+          case 'UQ_DOCTOR_CRM':
+            throw new DomainError(
+              'CRM já cadastrado.',
+              ERROR_CODE.CRM_JA_CADASTRADO,
+            );
+        }
+      }
+    }
+
+    throw error;
+  }
+
   async createWithUser(
     userData: Partial<User>,
     doctorData: Partial<Doctor>,
   ): Promise<Doctor> {
-    return this.dataSource.transaction(async (manager) => {
-      const userRepository = manager.getRepository(User);
-      const doctorRepository = manager.getRepository(Doctor);
+    console.log(this.dataSource.hasMetadata(Doctor));
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const userRepository = manager.getRepository(User);
+        const doctorRepository = manager.getRepository(Doctor);
 
-      const user = await userRepository.save(userRepository.create(userData));
+        const user = await userRepository.save(userRepository.create(userData));
 
-      const doctor = doctorRepository.create({
-        ...doctorData,
-        user,
+        const doctor = doctorRepository.create({
+          ...doctorData,
+          user,
+        });
+
+        return doctorRepository.save(doctor);
       });
+    } catch (error) {
+      this.handleDatabaseError(error);
+    }
+  }
 
-      return doctorRepository.save(doctor);
+  async find(query: GetDoctorsDto): Promise<Doctor[]> {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 10;
+
+    return this.repository.find({
+      skip: pageSize * (page - 1),
+      take: pageSize,
+      where: {
+        user: {
+          ...(query.name?.trim() && { name: ILike(`%${query.name.trim()}%`) }),
+        },
+      },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  async findOne(filters: { id?: number }): Promise<Doctor | null> {
+    return this.repository.findOne({
+      where: {
+        ...filters,
+        deletedAt: IsNull(),
+      },
     });
   }
 }

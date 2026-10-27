@@ -1,38 +1,66 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { ROLES } from 'src/@common/entities/role.entity';
-import { Doctor } from './entities/doctor.entity';
 import { DoctorsRepository } from './doctors.repository';
-import { RoleRepository } from 'src/users/role.repository';
-import { UserRegisterDto } from 'src/users/dto/user-register.dto';
+import { ROLE_REPOSITORY, RoleRepository } from 'src/roles/role.repository';
+import { Doctor } from 'src/@common/entities/doctor.entity';
+import { hash } from 'bcrypt';
+import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
+import { GetDoctorsDto } from './dto/get-doctors.dto';
 
 @Injectable()
 export class DoctorsService {
   constructor(
     private readonly doctorsRepository: DoctorsRepository,
+
+    @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepository,
   ) {}
 
-  async create(
-    createDoctorDto: CreateDoctorDto,
-    createUserDto: UserRegisterDto,
-  ): Promise<Doctor> {
+  async create(createDoctorDto: CreateDoctorDto): Promise<Doctor> {
     const doctorRole = await this.roleRepository.findOne(ROLES.DOCTOR);
+
     if (!doctorRole) {
       throw new InternalServerErrorException(
         'O papel de doctor não existe no sistema.',
       );
     }
 
-    const doctor = await this.doctorsRepository.createWithUser(
+    const hashedPassword = await hash(createDoctorDto.password, 10);
+
+    const { crm, phone, ...userData } = createDoctorDto;
+
+    return this.doctorsRepository.createWithUser(
       {
-        ...createUserDto,
+        ...userData,
         roles: [doctorRole],
+        password: hashedPassword,
       },
       {
-        ...createDoctorDto,
+        crm,
+        phone,
+        contactEmail: userData.email,
       },
     );
+  }
+
+  async getAll(query: GetDoctorsDto): Promise<Doctor[]> {
+    return this.doctorsRepository.find(query);
+  }
+
+  async getOne(id: number): Promise<Doctor> {
+    const doctor = await this.doctorsRepository.findOne({ id: id });
+
+    if (!doctor) {
+      throw new DomainError(
+        'Médico não encontrado',
+        ERROR_CODE.RECURSO_NAO_ENCONTRADO,
+      );
+    }
 
     return doctor;
   }

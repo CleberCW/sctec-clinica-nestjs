@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
-import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { RequireRole } from 'src/@common/decorators/roles.decorator';
+import { ROLES } from 'src/@common/entities/role.entity';
+import { JwtGuard } from 'src/@common/guards/jwt.guard';
+import { plainToInstance } from 'class-transformer';
+import { DoctorResponseDto } from './dto/doctor-response.dto';
+import { GetDoctorsDto } from './dto/get-doctors.dto';
 
 @Controller('doctors')
 export class DoctorsController {
   constructor(private readonly doctorsService: DoctorsService) {}
 
   @Post()
-  create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorsService.create(createDoctorDto);
+  @UseGuards(JwtGuard)
+  @RequireRole([ROLES.ADMIN])
+  async create(@Body() createDoctorDto: CreateDoctorDto) {
+    const doctor = await this.doctorsService.create(createDoctorDto);
+
+    return plainToInstance(DoctorResponseDto, doctor, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @Get()
-  findAll() {
-    return this.doctorsService.findAll();
+  @UseGuards(JwtGuard)
+  async getAll(@Query() query: GetDoctorsDto) {
+    const doctors = await this.doctorsService.getAll(query);
+
+    return plainToInstance(DoctorResponseDto, doctors, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorsService.findOne(+id);
-  }
+  @Get('/:id')
+  @UseGuards(JwtGuard)
+  async getOne(@Param('id') id: number) {
+    const patient = await this.doctorsService.getOne(id);
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
-    return this.doctorsService.update(+id, updateDoctorDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.doctorsService.remove(+id);
+    return plainToInstance(DoctorResponseDto, patient, {
+      excludeExtraneousValues: true,
+    });
   }
 }
