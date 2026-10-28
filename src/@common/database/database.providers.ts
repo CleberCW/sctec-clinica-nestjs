@@ -1,5 +1,6 @@
-import 'dotenv/config';
+import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
+
 import { Role } from '../entities/role.entity';
 import { User } from '../entities/user.entity';
 import { Appointment } from '../entities/appointment.entity';
@@ -14,14 +15,15 @@ export const DATASOURCE_TOKEN = 'DATA_SOURCE';
 export const databaseProviders = [
   {
     provide: DATASOURCE_TOKEN,
-    useFactory: async () => {
+    inject: [ConfigService],
+    useFactory: async (configService: ConfigService) => {
       const dataSource = new DataSource({
         type: 'postgres',
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT ?? 5432),
-        username: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+        host: configService.getOrThrow<string>('DB_HOST'),
+        port: configService.getOrThrow<number>('DB_PORT'),
+        username: configService.getOrThrow<string>('DB_USER'),
+        password: configService.getOrThrow<string>('DB_PASSWORD'),
+        database: configService.getOrThrow<string>('DB_NAME'),
         entities: [
           User,
           Role,

@@ -15,6 +15,7 @@ import { JwtGuard } from 'src/@common/guards/jwt.guard';
 import { plainToInstance } from 'class-transformer';
 import { DoctorResponseDto } from './dto/doctor-response.dto';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
+import { CreateDoctorSchedulesDto } from './dto/create-doctor-schedule.dto';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -49,5 +50,20 @@ export class DoctorsController {
     return plainToInstance(DoctorResponseDto, patient, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Get('/:id/work-schedule')
+  @UseGuards(JwtGuard)
+  getSchedule() {
+    return 'Escala';
+  }
+
+  @Post('/:id/work-schedule')
+  @UseGuards(JwtGuard)
+  postSchedule(
+    @Param('id') id: number,
+    @Body() schedule: CreateDoctorSchedulesDto,
+  ) {
+    return this.doctorsService.postSchedule(id, schedule);
   }
 }

@@ -11,6 +11,7 @@ import { Doctor } from 'src/@common/entities/doctor.entity';
 import { hash } from 'bcrypt';
 import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
+import { CreateDoctorSchedulesDto } from './dto/create-doctor-schedule.dto';
 
 @Injectable()
 export class DoctorsService {
@@ -63,5 +64,9 @@ export class DoctorsService {
     }
 
     return doctor;
+  }
+
+  async postSchedule(id: number, schedule: CreateDoctorSchedulesDto) {
+    return await this.doctorsRepository.replaceSchedules(id, schedule);
   }
 }

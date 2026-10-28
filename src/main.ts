@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DomainError, ERROR_CODE } from './@common/errors/domain.error';
+import { extractValidationMessages } from './@common/tools/extract-validation-messages';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,9 +13,7 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       exceptionFactory: (errors) => {
-        const messages = errors.flatMap((error) =>
-          Object.values(error.constraints ?? {}),
-        );
+        const messages = extractValidationMessages(errors);
 
         return new DomainError(messages, ERROR_CODE.DADOS_INVALIDOS);
       },
@@ -28,7 +27,6 @@ async function bootstrap() {
     defaultVersion: '1', // Isso coloca automaticamente o "/v1" no início de TODAS as rotas
   });
 
-  // Precisa fazer validação da env
   await app.listen(process.env.PORT ?? 3000);
 }
 
