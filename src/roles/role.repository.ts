@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 export abstract class RoleRepository {
   abstract findByNames(role: RoleEnum[]): Promise<Role[] | null>;
+  abstract findOne(role: RoleEnum): Promise<Role | null>;
 }
 
 export const ROLE_TYPEORM_REPOSITORY = 'ROLE_TYPEORM_REPOSITORY';
@@ -20,5 +21,9 @@ export class RoleTypeOrmRepository implements RoleRepository {
     return await this.repository.findBy({
       name: In(roleNames),
     });
+  }
+
+  async findOne(role: RoleEnum): Promise<Role | null> {
+    return await this.repository.findOne({ where: { name: role } });
   }
 }

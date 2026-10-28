@@ -1,13 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { UserRegisterDto } from './dto/user-register.dto';
-import { RoleRepository } from './role.repository';
+import { ROLE_REPOSITORY, RoleRepository } from '../roles/role.repository';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+
+    @Inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepository,
   ) {}
 
@@ -23,7 +25,7 @@ export class UserService {
     }
 
     const dbUser = await this.userRepository.createAndSaveUser({
-      name: userData.firstName,
+      name: userData.name,
       email: userData.email,
       password: hashedPassword,
       roles: roles,

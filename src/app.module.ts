@@ -11,6 +11,7 @@ import { AdminSeedModule } from './database/seeders/admin-seed.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from './auth/jwt.module';
 import { PatientsModule } from './patients/patients.module';
+import { DoctorsModule } from './doctors/doctors.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { PatientsModule } from './patients/patients.module';
       }),
     }),
     PatientsModule,
+    DoctorsModule,
   ],
   controllers: [AppController],
   providers: [

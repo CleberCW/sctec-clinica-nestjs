@@ -11,26 +11,15 @@ import type { RoleEnum } from 'src/@common/entities/role.entity';
 
 export class UserRegisterDto {
   @IsString({
-    message: 'O primeiro nome deve ser um texto.',
+    message: 'O nome deve ser um texto.',
   })
   @IsNotEmpty({
-    message: 'O primeiro nome não pode ser vazio.',
+    message: 'O nome não pode ser vazio.',
   })
   @Matches(/^[\p{L}]+(?:[ '-][\p{L}]+)*$/u, {
-    message: 'O primeiro nome deve conter apenas letras.',
+    message: 'O nome deve conter apenas letras.',
   })
-  firstName!: string;
-
-  @IsString({
-    message: 'O sobrenome deve ser um texto.',
-  })
-  @IsNotEmpty({
-    message: 'O sobrenome não pode ser vazio.',
-  })
-  @Matches(/^[\p{L}]+(?:[ '-][\p{L}]+)*$/u, {
-    message: 'O sobrenome deve conter apenas letras.',
-  })
-  lastName!: string;
+  name!: string;
 
   @IsEmail(
     {},
@@ -58,6 +47,6 @@ export class UserRegisterDto {
   )
   password!: string;
 
-  @IsEnum(ROLES)
+  @IsEnum(ROLES, { each: true })
   roles!: RoleEnum[];
 }

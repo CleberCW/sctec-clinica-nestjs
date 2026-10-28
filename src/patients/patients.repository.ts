@@ -1,4 +1,4 @@
-import { IsNull, Like, QueryFailedError, Repository } from 'typeorm';
+import { ILike, IsNull, QueryFailedError, Repository } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { Patient } from 'src/@common/entities/patient.entity';
 import { DuplicatePatientCpfError } from 'src/@common/errors/duplicate-patient-cpf-error';
@@ -33,7 +33,6 @@ export class PatientsTypeORMRepository implements PatientsRepository {
 
   async create(patientData: Partial<Patient>): Promise<Patient> {
     const newPatient = this.repository.create(patientData);
-
     try {
       return await this.repository.save(newPatient);
     } catch (error: unknown) {
@@ -58,7 +57,7 @@ export class PatientsTypeORMRepository implements PatientsRepository {
       take: pageSize,
       where: {
         ...(query.name?.trim() && {
-          name: Like(`%${query.name.trim()}%`),
+          name: ILike(`%${query.name.trim()}%`),
         }),
       },
     });
