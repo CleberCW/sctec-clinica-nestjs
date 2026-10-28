@@ -29,7 +29,7 @@ export class CreateDoctorScheduleItemDto {
   endTime!: string;
 
   @IsInt({ message: 'A duração do atendimento deve ser um número inteiro.' })
-  @Min(5, { message: 'A duração mínima do atendimento é de 30 minutos.' })
-  @Max(240, { message: 'A duração máxima do atendimento é de 120 minutos.' })
+  @Min(30, { message: 'A duração mínima do atendimento é de 30 minutos.' })
+  @Max(120, { message: 'A duração máxima do atendimento é de 120 minutos.' })
   slotDurationMinutes!: number;
 }

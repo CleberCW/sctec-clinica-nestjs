@@ -7,11 +7,11 @@ import { UserModule } from './users/user.module';
 import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import z from 'zod';
-import { AdminSeedModule } from './database/seeders/admin-seed.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from './auth/jwt.module';
 import { PatientsModule } from './patients/patients.module';
 import { DoctorsModule } from './doctors/doctors.module';
+import { AdminSeedModule } from './@common/database/seeders/admin-seed.module';
 
 @Module({
   imports: [

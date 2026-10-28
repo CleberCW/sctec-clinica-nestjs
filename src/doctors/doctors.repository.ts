@@ -11,8 +11,6 @@ import { DATASOURCE_TOKEN } from 'src/@common/database/database.providers';
 import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { Doctor } from 'src/@common/entities/doctor.entity';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
-import { DoctorSchedule } from 'src/@common/entities/doctorSchedule.entity';
-import { CreateDoctorSchedulesDto } from './dto/create-doctor-schedule.dto';
 
 export abstract class DoctorsRepository {
   abstract createWithUser(
@@ -21,10 +19,6 @@ export abstract class DoctorsRepository {
   ): Promise<Doctor>;
   abstract find(query: GetDoctorsDto): Promise<Doctor[]>;
   abstract findOne(filters: { id?: number }): Promise<Doctor | null>;
-  abstract replaceSchedules(
-    doctorId: number,
-    schedules: CreateDoctorSchedulesDto,
-  ): Promise<DoctorSchedule[]>;
 }
 
 export const DOCTORS_TYPEORM_REPOSITORY = 'DOCTOR_REPOSITORY';
@@ -114,26 +108,6 @@ export class DoctorsTypeORMRepository implements DoctorsRepository {
         ...filters,
         deletedAt: IsNull(),
       },
-    });
-  }
-
-  async replaceSchedules(
-    doctorId: number,
-    dto: CreateDoctorSchedulesDto,
-  ): Promise<DoctorSchedule[]> {
-    return this.dataSource.transaction(async (manager) => {
-      const repository = manager.getRepository(DoctorSchedule);
-
-      await repository.delete({ doctorId });
-
-      const entities = dto.shifts.map((schedule) =>
-        repository.create({
-          ...schedule,
-          doctorId,
-        }),
-      );
-
-      return repository.save(entities);
     });
   }
 }
