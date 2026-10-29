@@ -12,9 +12,11 @@ import { hash } from 'bcrypt';
 import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
 import { CreateDoctorSchedulesDto } from './dto/create-doctor-schedule.dto';
-import { DOCTOR_SCHEDULES_REPOSITORY } from './doctors-schedules.providers';
-import { DoctorSchedulesRepository } from './doctors-schedules.repository';
-import { toAbsoluteDayMinutes } from './utils/utils';
+import {
+  DOCTOR_SCHEDULES_REPOSITORY,
+  DoctorSchedulesRepository,
+} from './doctors-schedules.repository';
+import { toAbsoluteDayMinutes } from 'src/@common/utils/utils';
 
 @Injectable()
 export class DoctorsService {
@@ -132,7 +134,7 @@ export class DoctorsService {
   }
 
   async getSchedule(id: number) {
-    const shifts = await this.doctorSchedulesRepository.findByDoctor(id);
+    const shifts = await this.doctorSchedulesRepository.findByDoctorId(id);
 
     return { shifts };
   }

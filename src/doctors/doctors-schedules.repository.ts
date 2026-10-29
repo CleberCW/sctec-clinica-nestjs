@@ -4,13 +4,15 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DATASOURCE_TOKEN } from 'src/@common/database/database.providers';
 import { DataSource } from 'typeorm';
 
+export const DOCTOR_SCHEDULES_REPOSITORY = 'DOCTOR_SCHEDULES_REPOSITORY';
+
 export abstract class DoctorSchedulesRepository {
   abstract replaceSchedules(
     doctorId: number,
     dto: CreateDoctorSchedulesDto,
   ): Promise<DoctorSchedule[]>;
 
-  abstract findByDoctor(doctorId: number): Promise<DoctorSchedule[]>;
+  abstract findByDoctorId(doctorId: number): Promise<DoctorSchedule[]>;
 }
 
 @Injectable()
@@ -40,7 +42,7 @@ export class DoctorSchedulesTypeORMRepository implements DoctorSchedulesReposito
     });
   }
 
-  async findByDoctor(doctorId: number): Promise<DoctorSchedule[]> {
+  async findByDoctorId(doctorId: number): Promise<DoctorSchedule[]> {
     return this.dataSource.getRepository(DoctorSchedule).find({
       where: { doctorId },
     });

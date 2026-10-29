@@ -1,6 +1,7 @@
-import { DoctorSchedulesTypeORMRepository } from './doctors-schedules.repository';
-
-export const DOCTOR_SCHEDULES_REPOSITORY = 'DOCTOR_SCHEDULES_REPOSITORY';
+import {
+  DOCTOR_SCHEDULES_REPOSITORY,
+  DoctorSchedulesTypeORMRepository,
+} from './doctors-schedules.repository';
 
 export const doctorSchedulesProviders = [
   {

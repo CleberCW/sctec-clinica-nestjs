@@ -9,5 +9,6 @@ import { doctorSchedulesProviders } from './doctors-schedules.providers';
   imports: [RoleModule],
   controllers: [DoctorsController],
   providers: [DoctorsService, ...doctorsProviders, ...doctorSchedulesProviders],
+  exports: [DoctorsService],
 })
 export class DoctorsModule {}

@@ -64,7 +64,6 @@ export class DoctorsTypeORMRepository implements DoctorsRepository {
     userData: Partial<User>,
     doctorData: Partial<Doctor>,
   ): Promise<Doctor> {
-    console.log(this.dataSource.hasMetadata(Doctor));
     try {
       return await this.dataSource.transaction(async (manager) => {
         const userRepository = manager.getRepository(User);
