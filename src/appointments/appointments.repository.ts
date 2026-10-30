@@ -24,6 +24,11 @@ export abstract class AppointmentsRepository {
   ): Promise<boolean>;
 
   abstract find(filters: FindAppointmentsFilters): Promise<Appointment[]>;
+
+  abstract update(
+    id: number,
+    appointment: Partial<Appointment>,
+  ): Promise<Appointment>;
 }
 export const APPOINTMENTS_TYPEORM_REPOSITORY = 'APPOINTMENTS_REPOSITORY';
 
@@ -149,7 +154,24 @@ export class AppointmentsTypeORMRepository implements AppointmentsRepository {
     return conflictCount > 0;
   }
 
-  //O método abaixo ficou em desuso ao utilizar constraints no próprio banco para validar horáriod a consulta
+  async update(
+    id: number,
+    appointment: Partial<Appointment>,
+  ): Promise<Appointment> {
+    try {
+      const repository = this.dataSource.getRepository(Appointment);
+
+      await repository.update({ id: id }, appointment);
+
+      return await repository.findOneByOrFail({
+        id: id,
+      });
+    } catch (error) {
+      this.handleDatabaseError(error);
+    }
+  }
+
+  //O método abaixo ficou em desuso ao utilizar constraints no próprio banco para valiPar horáriod a consulta
   async hasConflict(
     doctorId: number,
     patientId: number,

@@ -15,9 +15,9 @@ import { Doctor } from './doctor.entity';
 
 export const APPOINTMENT_STATUSES = [
   'scheduled',
-  'completed',
+  'in_progress',
+  'done',
   'cancelled',
-  'no_show',
 ] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 

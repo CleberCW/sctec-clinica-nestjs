@@ -5,7 +5,10 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { toAbsoluteDayMinutes } from 'src/@common/utils/utils';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { PatientsService } from 'src/patients/patients.service';
-import { Appointment } from 'src/@common/entities/appointment.entity';
+import {
+  Appointment,
+  APPOINTMENT_STATUSES,
+} from 'src/@common/entities/appointment.entity';
 import { DoctorSchedule } from 'src/@common/entities/doctorSchedule.entity';
 import { FindAppointmentsDto } from './dto/find-appointments.dto';
 import { ROLES } from 'src/@common/entities/role.entity';
@@ -88,27 +91,6 @@ export class AppointmentsService {
     );
   }
 
-  private async checkForConflicts(
-    doctorId: number,
-    patientId: number,
-    startAt: Date,
-    endAt: Date,
-  ): Promise<void> {
-    const hasConflict = await this.appointmentsRepository.hasConflict(
-      doctorId,
-      patientId,
-      startAt,
-      endAt,
-    );
-
-    if (hasConflict) {
-      throw new DomainError(
-        'O horário solicitado não está disponível.',
-        ERROR_CODE.HORARIO_INDISPONIVEL,
-      );
-    }
-  }
-
   async create(dto: CreateAppointmentDto): Promise<Appointment> {
     const patient = await this.patientsService.getOne(dto.patientId);
 
@@ -188,5 +170,103 @@ export class AppointmentsService {
     };
 
     return this.appointmentsRepository.find(filters);
+  }
+
+  async getById(id: number, user: AuthUserDto): Promise<Appointment> {
+    const appointment = await this.appointmentsRepository.findById(id);
+
+    if (!appointment) {
+      throw new DomainError(
+        'Agendamento não encontrado.',
+        ERROR_CODE.RECURSO_NAO_ENCONTRADO,
+      );
+    }
+
+    const isDoctor = user.data.roles.includes(ROLES.DOCTOR);
+    const isAdmin = user.data.roles.includes(ROLES.ADMIN);
+
+    if (isDoctor && !isAdmin && appointment.doctorId !== Number(user.sub)) {
+      throw new DomainError(
+        'Você não tem permissão para acessar este agendamento.',
+        ERROR_CODE.ACESSO_NEGADO,
+      );
+    }
+
+    return appointment;
+  }
+
+  async update(
+    id: number,
+    dto: Partial<CreateAppointmentDto> & { status?: Appointment['status'] },
+    user: AuthUserDto,
+  ): Promise<Appointment> {
+    const appointment = await this.getById(id, user);
+
+    if (!appointment) {
+      throw new DomainError(
+        'Agendamento não encontrado.',
+        ERROR_CODE.RECURSO_NAO_ENCONTRADO,
+      );
+    }
+
+    if (!dto.status || !APPOINTMENT_STATUSES.includes(dto.status)) {
+      throw new DomainError(
+        'O novo status é inválido.',
+        ERROR_CODE.DADOS_INVALIDOS,
+      );
+    }
+
+    const isAdmin = user.data.roles.includes(ROLES.ADMIN);
+    const isCorrectDoctor =
+      user.data.roles.includes(ROLES.DOCTOR) &&
+      appointment.doctorId === Number(user.sub);
+    const isSecretary = user.data.roles.includes(ROLES.SECRETARY);
+
+    if (appointment.status === 'scheduled') {
+      if (dto.status == 'in_progress') {
+        if (!isCorrectDoctor && !isAdmin) {
+          throw new DomainError(
+            'Você não tem permissão para alterar o status do agendamento para "em andamento".',
+            ERROR_CODE.ACESSO_NEGADO,
+          );
+        }
+
+        return await this.appointmentsRepository.update(id, {
+          status: 'in_progress',
+        });
+      }
+      if (dto.status == 'cancelled') {
+        if (!isSecretary && !isAdmin && !isCorrectDoctor) {
+          throw new DomainError(
+            'Você não tem permissão para cancelar este agendamento.',
+            ERROR_CODE.ACESSO_NEGADO,
+          );
+        }
+
+        return await this.appointmentsRepository.update(id, {
+          status: 'cancelled',
+        });
+      }
+    }
+
+    if (appointment.status === 'in_progress') {
+      if (dto.status == 'done' || dto.status == 'cancelled') {
+        if (!isCorrectDoctor && !isAdmin) {
+          throw new DomainError(
+            'Você não tem permissão para alterar o status do agendamento para "concluído".',
+            ERROR_CODE.ACESSO_NEGADO,
+          );
+        }
+
+        return this.appointmentsRepository.update(id, {
+          status: dto.status,
+        });
+      }
+    }
+
+    throw new DomainError(
+      'A transição de status solicitada não é permitida.',
+      ERROR_CODE.TRANSICAO_INVALIDA,
+    );
   }
 }
