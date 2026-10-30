@@ -21,7 +21,7 @@ export class PatientsService {
         cpf: dto.cpf.replace(/\D/g, ''),
       });
 
-      if (existingPatient) {
+      if (existingPatient && existingPatient.deletedAt) {
         return await this.patientsRepository.update(existingPatient.id, {
           ...dto,
           deletedAt: null,
@@ -35,7 +35,7 @@ export class PatientsService {
     } catch (error: unknown) {
       if (error instanceof DuplicatePatientCpfError) {
         throw new DomainError(
-          'Este CPF já está cadastrado.',
+          'Já há um paciente cadastrado com este CPF.',
           ERROR_CODE.CPF_JA_CADASTRADO,
         );
       }

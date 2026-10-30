@@ -12,9 +12,11 @@ import { hash } from 'bcrypt';
 import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
 import { CreateDoctorSchedulesDto } from './dto/create-doctor-schedule.dto';
-import { DOCTOR_SCHEDULES_REPOSITORY } from './doctors-schedules.providers';
-import { DoctorSchedulesRepository } from './doctors-schedules.repository';
-import { toAbsoluteDayMinutes } from './utils/utils';
+import {
+  DOCTOR_SCHEDULES_REPOSITORY,
+  DoctorSchedulesRepository,
+} from './doctors-schedules.repository';
+import { toAbsoluteDayMinutes } from 'src/@common/utils/utils';
 
 @Injectable()
 export class DoctorsService {
@@ -59,12 +61,22 @@ export class DoctorsService {
     return this.doctorsRepository.find(query);
   }
 
-  async getOne(id: number): Promise<Doctor> {
-    const doctor = await this.doctorsRepository.findOne({ id: id });
+  async getOne(
+    id: number,
+    options: {
+      schedules?: boolean;
+      userId?: number;
+    } = {},
+  ): Promise<Doctor> {
+    const doctor = await this.doctorsRepository.findOne({
+      id,
+      schedules: options.schedules ?? false,
+      userId: options.userId,
+    });
 
     if (!doctor) {
       throw new DomainError(
-        'Médico não encontrado',
+        'Médico não encontrado.',
         ERROR_CODE.RECURSO_NAO_ENCONTRADO,
       );
     }
@@ -132,7 +144,7 @@ export class DoctorsService {
   }
 
   async getSchedule(id: number) {
-    const shifts = await this.doctorSchedulesRepository.findByDoctor(id);
+    const shifts = await this.doctorSchedulesRepository.findByDoctorId(id);
 
     return { shifts };
   }

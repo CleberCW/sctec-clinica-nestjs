@@ -10,7 +10,7 @@ import {
 import { UserService } from './user.service';
 import { JwtGuard } from 'src/@common/guards/jwt.guard';
 import { CurrentUser } from 'src/@common/decorators/current-user.decorator';
-import type { AuthUserDto } from 'src/@common/dtos/auth-user.dto';
+import type { AuthUserDto } from 'src/users/dto/auth-user.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/user-response-dto';
