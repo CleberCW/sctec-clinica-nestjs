@@ -61,12 +61,22 @@ export class DoctorsService {
     return this.doctorsRepository.find(query);
   }
 
-  async getOne(id: number): Promise<Doctor> {
-    const doctor = await this.doctorsRepository.findOne({ id: id });
+  async getOne(
+    id: number,
+    options: {
+      schedules?: boolean;
+      userId?: number;
+    } = {},
+  ): Promise<Doctor> {
+    const doctor = await this.doctorsRepository.findOne({
+      id,
+      schedules: options.schedules ?? false,
+      userId: options.userId,
+    });
 
     if (!doctor) {
       throw new DomainError(
-        'Médico não encontrado',
+        'Médico não encontrado.',
         ERROR_CODE.RECURSO_NAO_ENCONTRADO,
       );
     }

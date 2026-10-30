@@ -1,9 +1,14 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Query } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { RequireRole } from 'src/@common/decorators/roles.decorator';
 import { ROLES } from 'src/@common/entities/role.entity';
 import { JwtGuard } from 'src/@common/guards/jwt.guard';
+import { plainToInstance } from 'class-transformer';
+import { AppointmentResponseDto } from './dto/appointment-response.dto';
+import { FindAppointmentsDto } from './dto/find-appointments.dto';
+import { CurrentUser } from 'src/@common/decorators/current-user.decorator';
+import type { AuthUserDto } from 'src/users/dto/auth-user.dto';
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -12,7 +17,31 @@ export class AppointmentsController {
   @Post()
   @UseGuards(JwtGuard)
   @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.appointmentsService.create(createAppointmentDto);
+  async create(@Body() createAppointmentDto: CreateAppointmentDto) {
+    const appointment =
+      await this.appointmentsService.create(createAppointmentDto);
+
+    return plainToInstance(AppointmentResponseDto, appointment, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Get()
+  @UseGuards(JwtGuard)
+  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY, ROLES.DOCTOR])
+  async getAll(
+    @Query() findAppointmentsDto: FindAppointmentsDto,
+    @CurrentUser() user: AuthUserDto,
+  ) {
+    const appointments = await this.appointmentsService.getAll(
+      findAppointmentsDto,
+      user,
+    );
+
+    return appointments.map((appointment) =>
+      plainToInstance(AppointmentResponseDto, appointment, {
+        excludeExtraneousValues: true,
+      }),
+    );
   }
 }

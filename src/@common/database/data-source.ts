@@ -3,12 +3,12 @@ import { DataSource } from 'typeorm';
 
 import { Role } from '../entities/role.entity';
 import { User } from '../entities/user.entity';
-import { Appointment } from '../entities/appointment.entity';
 import { Doctor } from '../entities/doctor.entity';
 import { DoctorSchedule } from '../entities/doctorSchedule.entity';
 import { Log } from '../entities/log.entity';
 import { MedicalRecordEntry } from '../entities/medicalRecord.entity';
 import { Patient } from '../entities/patient.entity';
+import { Appointment } from '../entities/appointment.entity';
 
 const AppDataSource = new DataSource({
   type: 'postgres',

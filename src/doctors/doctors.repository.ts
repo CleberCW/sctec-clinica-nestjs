@@ -18,7 +18,11 @@ export abstract class DoctorsRepository {
     doctorData: Partial<Doctor>,
   ): Promise<Doctor>;
   abstract find(query: GetDoctorsDto): Promise<Doctor[]>;
-  abstract findOne(filters: { id?: number }): Promise<Doctor | null>;
+  abstract findOne(options: {
+    id?: number;
+    schedules?: boolean;
+    userId?: number;
+  }): Promise<Doctor | null>;
 }
 
 export const DOCTORS_TYPEORM_REPOSITORY = 'DOCTOR_REPOSITORY';
@@ -101,11 +105,20 @@ export class DoctorsTypeORMRepository implements DoctorsRepository {
     });
   }
 
-  async findOne(filters: { id?: number }): Promise<Doctor | null> {
+  async findOne(options: {
+    id?: number;
+    schedules?: boolean;
+    userId?: number;
+  }): Promise<Doctor | null> {
+    const { schedules, ...whereFilters } = options;
+
     return this.repository.findOne({
       where: {
-        ...filters,
+        ...whereFilters,
         deletedAt: IsNull(),
+      },
+      relations: {
+        schedules: schedules ?? false,
       },
     });
   }

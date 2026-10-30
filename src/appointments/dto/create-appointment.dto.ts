@@ -24,7 +24,7 @@ export class CreateAppointmentDto {
   @Matches(/(?:Z|[+-]\d{2}:\d{2})$/, {
     message: 'A data deve conter um fuso horário explícito.',
   })
-  startAt!: string;
+  startsAt!: string;
 
   @IsOptional()
   @IsString()

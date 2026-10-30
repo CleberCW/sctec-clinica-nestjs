@@ -15,13 +15,9 @@ import {
 } from '../decorators/roles.decorator';
 import { DomainError, ERROR_CODE } from '../errors/domain.error';
 import { Request } from 'express';
+import { AuthUserDto } from 'src/users/dto/auth-user.dto';
 
 export const JWT_GUARD_AUTH_REQ_KEY = 'user' as const;
-
-interface AccessTokenPayload extends JwtPayload {
-  sub: string;
-  roles: string[];
-}
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -37,19 +33,17 @@ export class JwtGuard implements CanActivate {
     const expressReq = context.switchToHttp().getRequest<Request>();
 
     if (!expressReq.headers.authorization) {
-      throw new DomainError('No token provided', ERROR_CODE.NAO_AUTENTICADO);
+      throw new DomainError(
+        'Token não providenciado',
+        ERROR_CODE.NAO_AUTENTICADO,
+      );
     }
 
     const [bearerString, token] = expressReq.headers.authorization.split(' ');
 
     if (bearerString !== 'Bearer') {
-      throw new DomainError(
-        'Invalid token provided',
-        ERROR_CODE.NAO_AUTENTICADO,
-      );
+      throw new DomainError('Token inválido', ERROR_CODE.NAO_AUTENTICADO);
     }
-    this.logger.debug(`Extracted token: ${token}`);
-
     return token;
   }
 
@@ -68,18 +62,18 @@ export class JwtGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     try {
       const token = this.extractToken(context);
-      const payload = this.jwtService.verify(token) as AccessTokenPayload;
+      const payload = this.jwtService.verify(token) as AuthUserDto;
 
       if (typeof payload === 'string') {
         throw new DomainError(
-          'Invalid token payload',
+          'Payload inválido no token',
           ERROR_CODE.NAO_AUTENTICADO,
         );
       }
 
       if (payload.iss !== this.configService.getOrThrow<string>('JWT_ISSUER')) {
         throw new DomainError(
-          'Invalid token issuer',
+          'Issuer inválido no token',
           ERROR_CODE.NAO_AUTENTICADO,
         );
       }
@@ -91,11 +85,11 @@ export class JwtGuard implements CanActivate {
 
       if (
         typeof payload.sub !== 'string' ||
-        !Array.isArray(payload.roles) ||
-        !payload.roles.every((role) => typeof role === 'string')
+        !Array.isArray(payload.data.roles) ||
+        !payload.data.roles.every((role) => typeof role === 'string')
       ) {
         throw new DomainError(
-          'Invalid token payload',
+          'Payload inválido no token',
           ERROR_CODE.NAO_AUTENTICADO,
         );
       }
@@ -104,14 +98,14 @@ export class JwtGuard implements CanActivate {
         const hasAccess =
           metadata.mode === 'every'
             ? metadata.requiredRoles.every((role) =>
-                payload.roles.includes(role),
+                payload.data.roles.includes(role),
               )
             : metadata.requiredRoles.some((role) =>
-                payload.roles.includes(role),
+                payload.data.roles.includes(role),
               );
 
         if (!hasAccess) {
-          throw new DomainError('Forbidden', ERROR_CODE.ACESSO_NEGADO);
+          throw new DomainError('Acesso negado', ERROR_CODE.ACESSO_NEGADO);
         }
       }
 
@@ -120,10 +114,7 @@ export class JwtGuard implements CanActivate {
       return true;
     } catch (error) {
       this.logger.error(error);
-      throw new DomainError(
-        'Invalid token provided',
-        ERROR_CODE.NAO_AUTENTICADO,
-      );
+      throw new DomainError('Token inválido', ERROR_CODE.NAO_AUTENTICADO);
     }
   }
 }

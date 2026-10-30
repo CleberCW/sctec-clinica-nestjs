@@ -21,10 +21,13 @@ export const APPOINTMENT_STATUSES = [
 ] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
 
+// EXCLUDE constraints são definidas por migration:
+// EXCL_APPOINTMENT_DOCTOR_OVERLAP
+// EXCL_APPOINTMENT_PATIENT_OVERLAP
 @Entity('appointments')
-@Index(['doctorId', 'startAt'])
-@Index(['patientId', 'startAt'])
-@Check('CHK_APPOINTMENT_TIME', '"startAt" < "endAt"')
+@Index(['doctorId', 'startsAt'])
+@Index(['patientId', 'startsAt'])
+@Check('CHK_APPOINTMENT_TIME', '"startsAt" < "endsAt"')
 export class Appointment {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -50,10 +53,10 @@ export class Appointment {
   doctorId!: number;
 
   @Column({ type: 'timestamptz' })
-  startAt!: Date;
+  startsAt!: Date;
 
   @Column({ type: 'timestamptz' })
-  endAt!: Date;
+  endsAt!: Date;
 
   @Column({ type: 'enum', enum: APPOINTMENT_STATUSES, default: 'scheduled' })
   status!: AppointmentStatus;

@@ -6,8 +6,8 @@ export interface RequireRoleOptions {
 }
 
 export interface RoleMetadata {
-  requiredRoles: string[];
-  mode: 'some' | 'every';
+  requiredRoles: RoleEnum[];
+  mode: 'every' | 'some';
 }
 
 export const ROLES_METADATA_KEY = 'REQUIRED_ROLES';
