@@ -86,14 +86,15 @@ export class DoctorsService {
   }
 
   private validateShifts(workSchedule: CreateDoctorSchedulesDto): void {
-    workSchedule.shifts.sort((a, b) => {
+    const shifts = [...workSchedule.shifts].sort((a, b) => {
       if (a.weekDay !== b.weekDay) {
         return a.weekDay - b.weekDay;
       }
+
       return a.startTime.localeCompare(b.startTime);
     });
 
-    workSchedule.shifts.forEach((shift, index) => {
+    shifts.forEach((shift, index) => {
       const startTimeMinutes = toAbsoluteDayMinutes(shift.startTime);
 
       const endTimeMinutes = toAbsoluteDayMinutes(shift.endTime);

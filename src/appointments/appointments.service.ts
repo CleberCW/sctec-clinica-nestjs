@@ -13,6 +13,7 @@ import { DoctorSchedule } from 'src/@common/entities/doctorSchedule.entity';
 import { FindAppointmentsDto } from './dto/find-appointments.dto';
 import { ROLES } from 'src/@common/entities/role.entity';
 import { AuthUserDto } from 'src/users/dto/auth-user.dto';
+import { Doctor } from 'src/@common/entities/doctor.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -222,14 +223,20 @@ export class AppointmentsService {
     }
 
     const isAdmin = user.data.roles.includes(ROLES.ADMIN);
-    const isCorrectDoctor =
-      user.data.roles.includes(ROLES.DOCTOR) &&
-      appointment.doctorId === Number(user.sub);
+    const isDoctor = user.data.roles.includes(ROLES.DOCTOR);
     const isSecretary = user.data.roles.includes(ROLES.SECRETARY);
+
+    let correctDoctor: null | Doctor = null;
+
+    if (isDoctor) {
+      correctDoctor = await this.doctorsService.getOne({
+        userId: Number(user.sub),
+      });
+    }
 
     if (appointment.status === 'scheduled') {
       if (dto.status == 'in_progress') {
-        if (!isCorrectDoctor && !isAdmin) {
+        if (!correctDoctor && !isAdmin) {
           throw new DomainError(
             'Você não tem permissão para alterar o status do agendamento para "em andamento".',
             ERROR_CODE.ACESSO_NEGADO,
@@ -241,7 +248,7 @@ export class AppointmentsService {
         });
       }
       if (dto.status == 'cancelled') {
-        if (!isSecretary && !isAdmin && !isCorrectDoctor) {
+        if (!isSecretary && !isAdmin && !correctDoctor) {
           throw new DomainError(
             'Você não tem permissão para cancelar este agendamento.',
             ERROR_CODE.ACESSO_NEGADO,
@@ -256,7 +263,7 @@ export class AppointmentsService {
 
     if (appointment.status === 'in_progress') {
       if (dto.status == 'done' || dto.status == 'cancelled') {
-        if (!isCorrectDoctor && !isAdmin) {
+        if (!correctDoctor && !isAdmin) {
           throw new DomainError(
             'Você não tem permissão para alterar o status do agendamento para "concluído".',
             ERROR_CODE.ACESSO_NEGADO,

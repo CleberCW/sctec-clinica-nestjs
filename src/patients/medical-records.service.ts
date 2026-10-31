@@ -112,7 +112,7 @@ export class MedicalRecordsService {
       );
     }
 
-    if (isDoctor && !isAdmin) {
+    if (isDoctor) {
       const doctor = await this.doctorService.getOne({
         userId: Number(user.sub),
       });
@@ -126,13 +126,14 @@ export class MedicalRecordsService {
 
       const filteredAppointments = patient.appointments.filter(
         (appt) =>
-          appt.status === APPOINTMENT_STATUSES.DONE ||
-          appt.status === APPOINTMENT_STATUSES.IN_PROGRESS,
+          (appt.status === APPOINTMENT_STATUSES.DONE ||
+            appt.status === APPOINTMENT_STATUSES.IN_PROGRESS) &&
+          appt.doctorId === doctor.id,
       );
 
       if (filteredAppointments.length === 0) {
         throw new DomainError(
-          'O médico não tem consulta com vínculo para criar um registro médico para este paciente.',
+          'O médico não tem consulta com vínculo para ler um registro médico para este paciente.',
           ERROR_CODE.ACESSO_NEGADO,
         );
       }
