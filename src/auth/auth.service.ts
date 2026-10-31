@@ -33,6 +33,7 @@ export class AuthService {
     const payload = {
       sub: String(user.id),
       data: {
+        userId: user.id,
         email: user.email,
         roles: user.roles.map((role) => role.name),
       },

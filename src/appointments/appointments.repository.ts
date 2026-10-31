@@ -59,7 +59,7 @@ export class AppointmentsTypeORMRepository implements AppointmentsRepository {
         driverError.constraint === 'EXCL_APPOINTMENT_DOCTOR_OVERLAP'
       ) {
         throw new DomainError(
-          'O horário solicitado não está disponível.',
+          'O horário solicitado para esse médico não está disponível.',
           ERROR_CODE.HORARIO_INDISPONIVEL,
         );
       }

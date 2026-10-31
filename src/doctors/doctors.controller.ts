@@ -58,14 +58,13 @@ export class DoctorsController {
 
   @Get('/:id/work-schedule')
   @UseGuards(JwtGuard)
-  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
   getSchedule(@Param('id') id: number) {
     return this.doctorsService.getSchedule(id);
   }
 
   @Post('/:id/work-schedule')
   @UseGuards(JwtGuard)
-  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
+  @RequireRole([ROLES.ADMIN])
   @HttpCode(HttpStatus.OK)
   postSchedule(
     @Param('id') id: number,
