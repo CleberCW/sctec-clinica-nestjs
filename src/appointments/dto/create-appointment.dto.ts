@@ -21,8 +21,8 @@ export class CreateAppointmentDto {
     { strict: true },
     { message: 'A data deve estar no formato ISO 8601.' },
   )
-  @Matches(/(?:Z|[+-]\d{2}:\d{2})$/, {
-    message: 'A data deve conter um fuso horário explícito.',
+  @Matches(/Z$/, {
+    message: 'A data deve ser informada em UTC, com sufixo Z.',
   })
   startsAt!: string;
 
