@@ -31,6 +31,12 @@ export class Migration1793399333261 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "appointments" ADD CONSTRAINT "CHK_APPOINTMENT_TIME" CHECK ("startsAt" < "endsAt")`,
     );
+    await queryRunner.query(
+      `ALTER TABLE "appointments" ADD CONSTRAINT "EXCL_APPOINTMENT_DOCTOR_OVERLAP" EXCLUDE USING gist ("doctorId" WITH =, tstzrange("startsAt", "endsAt", '[)'::text) WITH &&) WHERE (("status" <> 'cancelled'::appointments_status_enum) AND ("deletedAt" IS NULL))`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "appointments" ADD CONSTRAINT "EXCL_APPOINTMENT_PATIENT_OVERLAP" EXCLUDE USING gist ("patientId" WITH =, tstzrange("startsAt", "endsAt", '[)'::text) WITH &&) WHERE (("status" <> 'cancelled'::appointments_status_enum) AND ("deletedAt" IS NULL))`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
