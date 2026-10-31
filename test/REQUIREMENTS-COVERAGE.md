@@ -71,3 +71,5 @@ A constraint PostgreSQL de exclusão para consultas ativas de médico e paciente
 ## Convenção temporal adotada pela aplicação
 
 A aplicação opera integralmente em UTC. Os timestamps recebidos pela API devem usar ISO 8601 com sufixo `Z`; datas persistidas e retornadas são instantes UTC serializados em ISO 8601. Os dias da semana e os horários `HH:mm` configurados na escala também são interpretados em UTC. Nenhuma conversão para fuso horário local é aplicada.
+
+A suíte inclui testes de contrato que aceitam timestamps UTC com `Z` e rejeitam timestamps com offset diferente de UTC ou sem indicação explícita de UTC.
