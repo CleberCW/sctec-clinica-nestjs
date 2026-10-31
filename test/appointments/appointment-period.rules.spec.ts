@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import {
-  getClinicLocalDateTime,
+  getUtcDateTime,
   periodsOverlap,
 } from '../../src/appointments/appointment-period.rules';
 
@@ -35,20 +35,22 @@ describe('periodsOverlap', () => {
   });
 });
 
-describe('getClinicLocalDateTime', () => {
-  it('converts UTC instants to the clinic wall-clock time and weekday', () => {
-    // Monday 11:00 UTC is Monday 08:00 in São Paulo.
-    expect(getClinicLocalDateTime(new Date('2026-11-02T11:00:00.000Z'))).toEqual({
+describe('getUtcDateTime', () => {
+  it('reads weekday and time directly in UTC', () => {
+    expect(getUtcDateTime(new Date('2026-11-02T11:00:00.000Z'))).toEqual({
       weekDay: 1,
-      minutes: 8 * 60,
+      minutes: 11 * 60,
     });
   });
 
-  it('handles an instant that belongs to the previous local calendar day', () => {
-    // Tuesday 01:30 UTC is Monday 22:30 in São Paulo.
-    expect(getClinicLocalDateTime(new Date('2026-11-03T01:30:00.000Z'))).toEqual({
-      weekDay: 1,
-      minutes: 22 * 60 + 30,
+  it('uses the UTC calendar day when an instant crosses midnight', () => {
+    expect(getUtcDateTime(new Date('2026-11-03T01:30:00.000Z'))).toEqual({
+      weekDay: 2,
+      minutes: 90,
     });
+  });
+
+  it('rejects an invalid Date instance', () => {
+    expect(() => getUtcDateTime(new Date('invalid'))).toThrow(RangeError);
   });
 });
