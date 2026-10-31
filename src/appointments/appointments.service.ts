@@ -13,7 +13,6 @@ import { DoctorSchedule } from 'src/@common/entities/doctorSchedule.entity';
 import { FindAppointmentsDto } from './dto/find-appointments.dto';
 import { ROLES } from 'src/@common/entities/role.entity';
 import { AuthUserDto } from 'src/users/dto/auth-user.dto';
-import { Doctor } from 'src/@common/entities/doctor.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -118,6 +117,9 @@ export class AppointmentsService {
 
     const endsAt = this.validateAppointmentSchedule(startsAt, doctor.schedules);
 
+    // Aqui não seria necessário devido à existência de constraint do banco, mas a atividade pede que seja verificado
+    // primeiro o paciente, depois o médico. Como não é possível garantir a ordem das verificações no banco,
+    // optei por checar se conflita o paciente, e o banco se encarregará do conflito do médico
     if (
       await this.appointmentsRepository.hasPatientConflict(
         patient.id,
@@ -158,6 +160,13 @@ export class AppointmentsService {
         id: Number(user.sub),
         schedules: false,
       });
+
+      if (!doctor) {
+        throw new DomainError(
+          'Você não tem permissão para acessar esse recurso',
+          ERROR_CODE.ACESSO_NEGADO,
+        );
+      }
 
       doctorId = doctor.id;
     }
@@ -223,20 +232,14 @@ export class AppointmentsService {
     }
 
     const isAdmin = user.data.roles.includes(ROLES.ADMIN);
-    const isDoctor = user.data.roles.includes(ROLES.DOCTOR);
+    const isCorrectDoctor =
+      user.data.roles.includes(ROLES.DOCTOR) &&
+      appointment.doctorId === Number(user.sub);
     const isSecretary = user.data.roles.includes(ROLES.SECRETARY);
-
-    let correctDoctor: null | Doctor = null;
-
-    if (isDoctor) {
-      correctDoctor = await this.doctorsService.getOne({
-        userId: Number(user.sub),
-      });
-    }
 
     if (appointment.status === 'scheduled') {
       if (dto.status == 'in_progress') {
-        if (!correctDoctor && !isAdmin) {
+        if (!isCorrectDoctor && !isAdmin) {
           throw new DomainError(
             'Você não tem permissão para alterar o status do agendamento para "em andamento".',
             ERROR_CODE.ACESSO_NEGADO,
@@ -248,7 +251,7 @@ export class AppointmentsService {
         });
       }
       if (dto.status == 'cancelled') {
-        if (!isSecretary && !isAdmin && !correctDoctor) {
+        if (!isSecretary && !isAdmin && !isCorrectDoctor) {
           throw new DomainError(
             'Você não tem permissão para cancelar este agendamento.',
             ERROR_CODE.ACESSO_NEGADO,
@@ -263,7 +266,7 @@ export class AppointmentsService {
 
     if (appointment.status === 'in_progress') {
       if (dto.status == 'done' || dto.status == 'cancelled') {
-        if (!correctDoctor && !isAdmin) {
+        if (!isCorrectDoctor && !isAdmin) {
           throw new DomainError(
             'Você não tem permissão para alterar o status do agendamento para "concluído".',
             ERROR_CODE.ACESSO_NEGADO,
