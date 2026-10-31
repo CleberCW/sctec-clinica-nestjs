@@ -42,7 +42,7 @@ export class AppointmentsService {
     }
 
     const { weekDay, minutes: appointmentMinutes } =
-      getClinicLocalDateTime(startAt);
+      getUtcDateTime(startAt);
 
     if (!doctorSchedules || doctorSchedules.length === 0) {
       throw new DomainError(
