@@ -10,6 +10,12 @@ export abstract class AppointmentsRepository {
 
   abstract findById(id: number): Promise<Appointment | null>;
 
+  abstract hasDoctorConflict(
+    doctorId: number,
+    startAt: Date,
+    endAt: Date,
+  ): Promise<boolean>;
+
   abstract hasPatientConflict(
     patientId: number,
     startAt: Date,
@@ -138,6 +144,30 @@ export class AppointmentsTypeORMRepository implements AppointmentsRepository {
         .skip((filters.page - 1) * filters.pageSize)
         .take(filters.pageSize)
         .getMany();
+    } catch (error) {
+      this.handleDatabaseError(error);
+    }
+  }
+
+  async hasDoctorConflict(
+    doctorId: number,
+    startAt: Date,
+    endsAt: Date,
+  ): Promise<boolean> {
+    try {
+      const conflictCount = await this.dataSource
+        .getRepository(Appointment)
+        .createQueryBuilder('appointment')
+        .where('appointment.startsAt < :endsAt', { endsAt })
+        .andWhere('appointment.endsAt > :startsAt', { startsAt: startAt })
+        .andWhere('appointment.status != :cancelled', {
+          cancelled: 'cancelled',
+        })
+        .andWhere('appointment.deletedAt IS NULL')
+        .andWhere('appointment.doctorId = :doctorId', { doctorId })
+        .getCount();
+
+      return conflictCount > 0;
     } catch (error) {
       this.handleDatabaseError(error);
     }
