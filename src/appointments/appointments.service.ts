@@ -3,6 +3,7 @@ import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { AppointmentsRepository } from './appointments.repository';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { toAbsoluteDayMinutes } from 'src/@common/utils/utils';
+import { getClinicLocalDateTime } from './appointment-period.rules';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { PatientsService } from 'src/patients/patients.service';
 import {
@@ -40,10 +41,8 @@ export class AppointmentsService {
       );
     }
 
-    const weekDay = startAt.getUTCDay();
-
-    const appointmentMinutes =
-      startAt.getUTCHours() * 60 + startAt.getUTCMinutes();
+    const { weekDay, minutes: appointmentMinutes } =
+      getClinicLocalDateTime(startAt);
 
     if (!doctorSchedules || doctorSchedules.length === 0) {
       throw new DomainError(
@@ -52,42 +51,50 @@ export class AppointmentsService {
       );
     }
 
-    for (const schedule of doctorSchedules) {
-      if (schedule.weekDay !== weekDay) {
-        continue;
+    const schedule = doctorSchedules.find((shift) => {
+      if (shift.weekDay !== weekDay) {
+        return false;
       }
 
-      if (appointmentMinutes % schedule.slotDurationMinutes !== 0) {
-        throw new DomainError(
-          'O horário do agendamento não coincide com a duração dos slots do médico.',
-          ERROR_CODE.HORARIO_FORA_DA_ESCALA,
-        );
-      }
+      const shiftStart = toAbsoluteDayMinutes(shift.startTime);
+      const shiftEnd = toAbsoluteDayMinutes(shift.endTime);
 
-      const scheduleStartMinutes = toAbsoluteDayMinutes(schedule.startTime);
+      return appointmentMinutes >= shiftStart && appointmentMinutes < shiftEnd;
+    });
 
-      const scheduleEndMinutes = toAbsoluteDayMinutes(schedule.endTime);
-
-      const appointmentEndMinutes =
-        appointmentMinutes + schedule.slotDurationMinutes;
-
-      if (
-        appointmentMinutes < scheduleStartMinutes ||
-        appointmentEndMinutes > scheduleEndMinutes
-      ) {
-        continue;
-      }
-
-      const endAt = new Date(
-        startAt.getTime() + schedule.slotDurationMinutes * 60000,
+    if (!schedule) {
+      throw new DomainError(
+        'O horário do agendamento está fora da escala do médico.',
+        ERROR_CODE.HORARIO_FORA_DA_ESCALA,
       );
-
-      return endAt;
     }
 
-    throw new DomainError(
-      'O horário do agendamento está fora da escala do médico.',
-      ERROR_CODE.HORARIO_FORA_DA_ESCALA,
+    const scheduleStartMinutes = toAbsoluteDayMinutes(schedule.startTime);
+    const scheduleEndMinutes = toAbsoluteDayMinutes(schedule.endTime);
+
+    if (
+      (appointmentMinutes - scheduleStartMinutes) %
+        schedule.slotDurationMinutes !==
+      0
+    ) {
+      throw new DomainError(
+        'O horário do agendamento não coincide com a grade do turno.',
+        ERROR_CODE.HORARIO_FORA_DA_ESCALA,
+      );
+    }
+
+    const appointmentEndMinutes =
+      appointmentMinutes + schedule.slotDurationMinutes;
+
+    if (appointmentEndMinutes > scheduleEndMinutes) {
+      throw new DomainError(
+        'A consulta não cabe integralmente no turno.',
+        ERROR_CODE.HORARIO_FORA_DA_ESCALA,
+      );
+    }
+
+    return new Date(
+      startAt.getTime() + schedule.slotDurationMinutes * 60_000,
     );
   }
 
@@ -116,6 +123,19 @@ export class AppointmentsService {
     const startsAt = new Date(dto.startsAt);
 
     const endsAt = this.validateAppointmentSchedule(startsAt, doctor.schedules);
+
+    if (
+      await this.appointmentsRepository.hasDoctorConflict(
+        doctor.id,
+        startsAt,
+        endsAt,
+      )
+    ) {
+      throw new DomainError(
+        'O horário solicitado não está disponível.',
+        ERROR_CODE.HORARIO_INDISPONIVEL,
+      );
+    }
 
     if (
       await this.appointmentsRepository.hasPatientConflict(
