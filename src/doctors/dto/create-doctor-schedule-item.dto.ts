@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsString,
   Matches,
-  Max,
   Min,
 } from 'class-validator';
 import type { DayOfWeek } from 'src/@common/entities/doctorSchedule.entity';
@@ -29,7 +28,6 @@ export class CreateDoctorScheduleItemDto {
   endTime!: string;
 
   @IsInt({ message: 'A duração do atendimento deve ser um número inteiro.' })
-  @Min(30, { message: 'A duração mínima do atendimento é de 30 minutos.' })
-  @Max(120, { message: 'A duração máxima do atendimento é de 120 minutos.' })
+  @Min(1, { message: 'A duração do atendimento deve ser maior que zero.' })
   slotDurationMinutes!: number;
 }
