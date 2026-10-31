@@ -126,7 +126,7 @@ export class DoctorsService {
       if (endTimeMinutes > nextStartTimeMinutes) {
         throw new DomainError(
           'PRÓXIMO TURNO COMEÇA ANTES DO ATUAL TERMINAR',
-          ERROR_CODE.HORARIO_FORA_DA_ESCALA,
+          ERROR_CODE.DADOS_INVALIDOS,
         );
       }
     });
