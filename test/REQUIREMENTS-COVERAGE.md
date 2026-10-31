@@ -23,7 +23,7 @@ O Jest coleta cobertura somente de:
 - `src/doctors/doctors.service.ts`
 - `src/patients/patients.service.ts`
 
-O limiar configurado é 80% para statements, branches, functions e lines. A regra de sobreposição e a extração de data/hora UTC são funções puras testadas sem infraestrutura.
+O limiar configurado é 80% para statements, branches, functions e lines. A regra de sobreposição e a extração de dia/horário UTC são funções puras testadas sem infraestrutura.
 
 ## Limitações importantes
 
