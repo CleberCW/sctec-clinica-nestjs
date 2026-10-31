@@ -3,7 +3,7 @@ import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { AppointmentsRepository } from './appointments.repository';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { toAbsoluteDayMinutes } from 'src/@common/utils/utils';
-import { getClinicLocalDateTime } from './appointment-period.rules';
+import { getUtcDateTime } from './appointment-period.rules';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { PatientsService } from 'src/patients/patients.service';
 import {
