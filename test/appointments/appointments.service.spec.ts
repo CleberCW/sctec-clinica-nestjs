@@ -86,7 +86,7 @@ describe(AppointmentsService.name, () => {
     jest.clearAllMocks();
     startsAt = atUtcTime(8);
     schedule = {
-      weekDay: getClinicLocalDateTime(startsAt).weekDay,
+      weekDay: getUtcDateTime(startsAt).weekDay,
       startTime: '08:00',
       endTime: '12:00',
       slotDurationMinutes: 30,
@@ -190,7 +190,7 @@ describe(AppointmentsService.name, () => {
     });
 
     it('rejects an appointment outside every shift', async () => {
-      const outsideShift = atClinicTime(13);
+      const outsideShift = atUtcTime(13);
       await expectError(
         service.create({ ...dto(), startsAt: outsideShift.toISOString() }),
         ERROR_CODE.HORARIO_FORA_DA_ESCALA,
@@ -222,7 +222,7 @@ describe(AppointmentsService.name, () => {
     });
 
     it('rejects a start time that is not aligned to the shift grid', async () => {
-      const unaligned = atClinicTime(8, 20);
+      const unaligned = atUtcTime(8, 20);
       await expectError(
         service.create({ ...dto(), startsAt: unaligned.toISOString() }),
         ERROR_CODE.HORARIO_FORA_DA_ESCALA,
@@ -232,7 +232,7 @@ describe(AppointmentsService.name, () => {
 
     it('rejects a consultation that does not fit entirely before shift end', async () => {
       schedule = { ...schedule, startTime: '08:00', endTime: '09:10' };
-      const lateSlot = atClinicTime(9);
+      const lateSlot = atUtcTime(9);
       await expectError(
         service.create({ ...dto(), startsAt: lateSlot.toISOString() }),
         ERROR_CODE.HORARIO_FORA_DA_ESCALA,
