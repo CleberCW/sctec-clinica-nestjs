@@ -39,3 +39,30 @@ npm test
 npm run test:cov
 npm run build
 ```
+
+## Última execução de CI
+
+No commit testado pelo GitHub Actions:
+- `npm ci`: aprovado;
+- `npm run build`: aprovado;
+- `npm run test:cov -- --runInBand`: aprovado;
+- 5 suítes aprovadas, 64 testes aprovados.
+
+Cobertura medida:
+| Métrica | Resultado | Exigido |
+| --- | ---: | ---: |
+| Statements | 97,54% | 80% |
+| Branches | 88,60% | 80% |
+| Functions | 100% | 80% |
+| Lines | 97,43% | 80% |
+
+## Pendências de aceite que os testes unitários não cobrem
+
+A suíte da seção 4.5 não substitui os testes de aceitação do contrato da seção 4.9. Na revisão estática do código disponível também foram identificadas diferenças que precisam ser tratadas antes da avaliação externa:
+- `main.ts` habilita versionamento URI (`/v1`), mas não configura o prefixo global `/api` previsto no contrato.
+- O controller de escala declara `POST /doctors/:id/work-schedule`, enquanto o contrato exige `PUT /doctors/{doctorId}/work-schedule`; também permite `secretary` na escrita, embora o contrato exija `admin`.
+- O controller de usuários expõe `POST /users/register`, não `POST /users`, e sua proteção atual não restringe a criação ao perfil admin.
+- Os módulos/controllers de prontuário ainda não existem.
+- A resposta envelope de paginação (`data` e `meta`) precisa ser conferida nas rotas de listagem, conforme a seção 4.9.1.
+
+A constraint PostgreSQL de exclusão para consultas ativas de médico e paciente foi restaurada na migration que recria o enum de status. Ainda assim, a corrida concorrente descrita na RN10 deve ser confirmada contra PostgreSQL com duas requisições HTTP realmente simultâneas; não é simulada pela suíte unitária.
