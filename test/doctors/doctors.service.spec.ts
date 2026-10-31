@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+jest.mock('@nestjs/config', () => ({
+  ConfigService: class ConfigService {},
+}));
+
 import { InternalServerErrorException } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { DoctorsService } from '../../src/doctors/doctors.service';
