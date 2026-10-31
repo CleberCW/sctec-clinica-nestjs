@@ -1,4 +1,8 @@
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
+jest.mock('@nestjs/config', () => ({
+  ConfigService: class ConfigService {},
+}));
+
 import { compare } from 'bcrypt';
 import { AuthService } from '../../src/auth/auth.service';
 import { UserService } from '../../src/users/user.service';
