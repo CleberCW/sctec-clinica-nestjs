@@ -99,7 +99,10 @@ describe(AppointmentsService.name, () => {
     );
 
     patientsService.getOne.mockResolvedValue(patient);
-    doctorsService.getOne.mockResolvedValue({ id: 3, schedules: [schedule] });
+    doctorsService.getOne.mockImplementation(async () => ({
+      id: 3,
+      schedules: [schedule],
+    }));
     appointmentsRepository.hasDoctorConflict.mockResolvedValue(false);
     appointmentsRepository.hasPatientConflict.mockResolvedValue(false);
     appointmentsRepository.create.mockImplementation(
