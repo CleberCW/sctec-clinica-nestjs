@@ -134,6 +134,14 @@ describe(AppointmentsService.name, () => {
       expect(result.status).toBe('scheduled');
       expect(result.startsAt).toEqual(startsAt);
       expect(result.endsAt).toEqual(new Date(startsAt.getTime() + 30 * 60_000));
+      const response = JSON.parse(JSON.stringify(result)) as {
+        startsAt: string;
+        endsAt: string;
+      };
+      expect(response.startsAt).toBe(startsAt.toISOString());
+      expect(response.endsAt).toBe(
+        new Date(startsAt.getTime() + 30 * 60_000).toISOString(),
+      );
       expect(appointmentsRepository.hasDoctorConflict).toHaveBeenCalledWith(
         3,
         startsAt,
