@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsString,
   Matches,
+  Max,
   Min,
 } from 'class-validator';
 import type { DayOfWeek } from 'src/@common/entities/doctorSchedule.entity';
