@@ -2,8 +2,20 @@ import { Inject } from '@nestjs/common';
 import { DATASOURCE_TOKEN } from 'src/@common/database/database.providers';
 import { DataSource, QueryFailedError } from 'typeorm';
 import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
-import { Appointment } from 'src/@common/entities/appointment.entity';
-import { FindAppointmentsFilters } from './dto/find-appointments.dto';
+import {
+  Appointment,
+  AppointmentStatus,
+} from 'src/@common/entities/appointment.entity';
+
+export interface FindAppointmentsFilters {
+  doctorId?: number;
+  patientId?: number;
+  status?: AppointmentStatus;
+  from?: Date;
+  to?: Date;
+  page: number;
+  pageSize: number;
+}
 
 export abstract class AppointmentsRepository {
   abstract create(data: Partial<Appointment>): Promise<Appointment>;

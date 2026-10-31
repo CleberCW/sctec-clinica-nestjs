@@ -12,16 +12,6 @@ import {
   type AppointmentStatus,
 } from 'src/@common/entities/appointment.entity';
 
-export interface FindAppointmentsFilters {
-  doctorId?: number;
-  patientId?: number;
-  status?: AppointmentStatus;
-  from?: Date;
-  to?: Date;
-  page: number;
-  pageSize: number;
-}
-
 export class FindAppointmentsDto {
   @IsOptional()
   @Type(() => Number)

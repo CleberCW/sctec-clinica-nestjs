@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DomainError, ERROR_CODE } from './@common/errors/domain.error';
 import { extractValidationMessages } from './@common/tools/extract-validation-messages';
 import { ConfigService } from '@nestjs/config';
@@ -25,6 +25,13 @@ async function bootstrap() {
   );
 
   app.enableCors();
+
+  app.setGlobalPrefix('api');
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
 
   await app.listen(configService.get<number>('PORT', 3000));
 }

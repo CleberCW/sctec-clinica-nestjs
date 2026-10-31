@@ -8,6 +8,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -18,6 +19,8 @@ import { plainToInstance } from 'class-transformer';
 import { DoctorResponseDto } from './dto/doctor-response.dto';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
 import { CreateDoctorSchedulesDto } from './dto/create-doctor-schedule.dto';
+import { FindDoctorCalendarDto } from './dto/find-schedule.dto';
+import { DoctorCalendarResponseDto } from './dto/doctor-calendar-response.dto';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -48,7 +51,7 @@ export class DoctorsController {
   @Get('/:id')
   @UseGuards(JwtGuard)
   @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
-  async getOne(@Param('id') id: number) {
+  async getOne(@Param('id', ParseIntPipe) id: number) {
     const patient = await this.doctorsService.getOne({ id: id });
 
     return plainToInstance(DoctorResponseDto, patient, {
@@ -58,7 +61,7 @@ export class DoctorsController {
 
   @Get('/:id/work-schedule')
   @UseGuards(JwtGuard)
-  getSchedule(@Param('id') id: number) {
+  getSchedule(@Param('id', ParseIntPipe) id: number) {
     return this.doctorsService.getSchedule(id);
   }
 
@@ -67,9 +70,22 @@ export class DoctorsController {
   @RequireRole([ROLES.ADMIN])
   @HttpCode(HttpStatus.OK)
   postSchedule(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() schedule: CreateDoctorSchedulesDto,
   ) {
     return this.doctorsService.postSchedule(id, schedule);
+  }
+
+  @Get(':id/calendar')
+  @UseGuards(JwtGuard)
+  async getCalendar(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() query: FindDoctorCalendarDto,
+  ): Promise<DoctorCalendarResponseDto> {
+    const calendar = await this.doctorsService.getCalendar(id, query);
+
+    return plainToInstance(DoctorCalendarResponseDto, calendar, {
+      excludeExtraneousValues: true,
+    });
   }
 }

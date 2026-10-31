@@ -17,6 +17,7 @@ import {
   DoctorSchedulesRepository,
 } from './doctors-schedules.repository';
 import { toAbsoluteDayMinutes } from 'src/@common/utils/utils';
+import { FindDoctorCalendarDto } from './dto/find-schedule.dto';
 
 @Injectable()
 export class DoctorsService {
@@ -149,5 +150,31 @@ export class DoctorsService {
     const shifts = await this.doctorSchedulesRepository.findByDoctorId(id);
 
     return { shifts };
+  }
+
+  async getCalendar(id: number, query: FindDoctorCalendarDto) {
+    const doctor = await this.doctorsRepository.findOne({
+      id: id,
+    });
+
+    if (!doctor) {
+      throw new DomainError(
+        'Médico não encontrado.',
+        ERROR_CODE.RECURSO_NAO_ENCONTRADO,
+      );
+    }
+
+    const calendarData = await this.doctorsRepository.findCalendar(
+      doctor.id,
+      query.from,
+      query.to,
+    );
+
+    return {
+      workSchedule: {
+        shifts: calendarData?.schedules ?? [],
+      },
+      appointments: calendarData?.appointments ?? [],
+    };
   }
 }
