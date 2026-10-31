@@ -13,14 +13,13 @@ import { AuthUserDto } from '../../src/users/dto/auth-user.dto';
 import { Appointment } from '../../src/@common/entities/appointment.entity';
 import { CreateAppointmentDto } from '../../src/appointments/dto/create-appointment.dto';
 import { FindAppointmentsDto } from '../../src/appointments/dto/find-appointments.dto';
-import { getClinicLocalDateTime } from '../../src/appointments/appointment-period.rules';
+import { getUtcDateTime } from '../../src/appointments/appointment-period.rules';
 
 const DAY_MS = 24 * 60 * 60 * 1_000;
 
-function atClinicTime(hour: number, minute = 0): Date {
+function atUtcTime(hour: number, minute = 0): Date {
   const date = new Date(Date.now() + 10 * DAY_MS);
-  // São Paulo is UTC-03:00; build an absolute instant for the clinic wall clock.
-  date.setUTCHours(hour + 3, minute, 0, 0);
+  date.setUTCHours(hour, minute, 0, 0);
   return date;
 }
 
@@ -85,7 +84,7 @@ describe(AppointmentsService.name, () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    startsAt = atClinicTime(8);
+    startsAt = atUtcTime(8);
     schedule = {
       weekDay: getClinicLocalDateTime(startsAt).weekDay,
       startTime: '08:00',
