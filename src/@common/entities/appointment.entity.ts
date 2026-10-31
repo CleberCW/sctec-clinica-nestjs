@@ -13,13 +13,15 @@ import {
 import { Patient } from './patient.entity';
 import { Doctor } from './doctor.entity';
 
-export const APPOINTMENT_STATUSES = [
-  'scheduled',
-  'in_progress',
-  'done',
-  'cancelled',
-] as const;
-export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+export const APPOINTMENT_STATUSES = {
+  SCHEDULED: 'scheduled',
+  IN_PROGRESS: 'in_progress',
+  DONE: 'done',
+  CANCELLED: 'cancelled',
+} as const;
+
+export type AppointmentStatus =
+  (typeof APPOINTMENT_STATUSES)[keyof typeof APPOINTMENT_STATUSES];
 
 // EXCLUDE constraints são definidas por migration:
 // EXCL_APPOINTMENT_DOCTOR_OVERLAP

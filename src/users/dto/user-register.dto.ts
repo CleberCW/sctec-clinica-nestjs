@@ -42,7 +42,7 @@ export class UserRegisterDto {
     },
     {
       message:
-        'A senha deve conter pelo menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial.',
+        'A senha deve conter no mínimo 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial.',
     },
   )
   password!: string;

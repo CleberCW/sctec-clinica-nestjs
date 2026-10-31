@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import {
   APPOINTMENT_STATUSES,
-  AppointmentStatus,
+  type AppointmentStatus,
 } from 'src/@common/entities/appointment.entity';
 
 export interface FindAppointmentsFilters {
@@ -38,9 +38,9 @@ export class FindAppointmentsDto {
   @IsOptional()
   @IsEnum(APPOINTMENT_STATUSES, {
     message:
-      'O status informado é inválido. Valores permitidos: scheduled, completed, cancelled ou no_show.',
+      'O status informado é inválido. Valores permitidos: scheduled, in_progress, done ou cancelled.',
   })
-  status?: (typeof APPOINTMENT_STATUSES)[number];
+  status?: AppointmentStatus;
 
   @IsOptional()
   @IsDateString(
@@ -62,12 +62,12 @@ export class FindAppointmentsDto {
   @Type(() => Number)
   @IsInt({ message: 'A página deve ser um número inteiro.' })
   @Min(1, { message: 'A página deve ser maior ou igual a 1.' })
-  page = 1;
+  page?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'O tamanho da página deve ser um número inteiro.' })
   @Min(1, { message: 'O tamanho da página deve ser no mínimo 1.' })
   @Max(100, { message: 'O tamanho da página não pode ultrapassar 100.' })
-  pageSize = 10;
+  pageSize?: number;
 }

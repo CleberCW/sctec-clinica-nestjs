@@ -101,7 +101,8 @@ export class AppointmentsService {
       );
     }
 
-    const doctor = await this.doctorsService.getOne(dto.doctorId, {
+    const doctor = await this.doctorsService.getOne({
+      id: dto.doctorId,
       schedules: true,
     });
 
@@ -152,7 +153,8 @@ export class AppointmentsService {
     const isAdmin = user.data.roles.includes(ROLES.ADMIN);
 
     if (isDoctor && !isAdmin) {
-      const doctor = await this.doctorsService.getOne(Number(user.sub), {
+      const doctor = await this.doctorsService.getOne({
+        id: Number(user.sub),
         schedules: false,
       });
 
@@ -209,7 +211,10 @@ export class AppointmentsService {
       );
     }
 
-    if (!dto.status || !APPOINTMENT_STATUSES.includes(dto.status)) {
+    if (
+      !dto.status ||
+      !Object.values(APPOINTMENT_STATUSES).includes(dto.status)
+    ) {
       throw new DomainError(
         'O novo status é inválido.',
         ERROR_CODE.DADOS_INVALIDOS,

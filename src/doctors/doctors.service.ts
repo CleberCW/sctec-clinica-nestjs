@@ -62,16 +62,17 @@ export class DoctorsService {
   }
 
   async getOne(
-    id: number,
     options: {
+      id?: number;
       schedules?: boolean;
       userId?: number;
     } = {},
   ): Promise<Doctor> {
+    const { schedules = false, ...filters } = options;
+
     const doctor = await this.doctorsRepository.findOne({
-      id,
-      schedules: options.schedules ?? false,
-      userId: options.userId,
+      ...filters,
+      schedules,
     });
 
     if (!doctor) {

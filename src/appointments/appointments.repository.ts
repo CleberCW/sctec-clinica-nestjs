@@ -65,6 +65,7 @@ export class AppointmentsTypeORMRepository implements AppointmentsRepository {
       }
     }
 
+    //Expandir classes de erro para tratar outros tipos de erros do banco de dados, como violação de chave estrangeira, etc.
     throw error;
   }
 
@@ -81,57 +82,65 @@ export class AppointmentsTypeORMRepository implements AppointmentsRepository {
   }
 
   async findById(id: number): Promise<Appointment | null> {
-    return this.dataSource.getRepository(Appointment).findOne({
-      where: { id },
-      relations: {
-        doctor: true,
-        patient: true,
-      },
-    });
+    try {
+      return await this.dataSource.getRepository(Appointment).findOne({
+        where: { id },
+        relations: {
+          doctor: true,
+          patient: true,
+        },
+      });
+    } catch (error) {
+      this.handleDatabaseError(error);
+    }
   }
 
   async find(filters: FindAppointmentsFilters): Promise<Appointment[]> {
-    const queryBuilder = this.dataSource
-      .getRepository(Appointment)
-      .createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.doctor', 'doctor')
-      .leftJoinAndSelect('appointment.patient', 'patient');
+    try {
+      const queryBuilder = this.dataSource
+        .getRepository(Appointment)
+        .createQueryBuilder('appointment')
+        .leftJoinAndSelect('appointment.doctor', 'doctor')
+        .leftJoinAndSelect('appointment.patient', 'patient');
 
-    if (filters.doctorId !== undefined) {
-      queryBuilder.andWhere('appointment.doctorId = :doctorId', {
-        doctorId: filters.doctorId,
-      });
+      if (filters.doctorId !== undefined) {
+        queryBuilder.andWhere('appointment.doctorId = :doctorId', {
+          doctorId: filters.doctorId,
+        });
+      }
+
+      if (filters.patientId !== undefined) {
+        queryBuilder.andWhere('appointment.patientId = :patientId', {
+          patientId: filters.patientId,
+        });
+      }
+
+      if (filters.status !== undefined) {
+        queryBuilder.andWhere('appointment.status = :status', {
+          status: filters.status,
+        });
+      }
+
+      if (filters.from) {
+        queryBuilder.andWhere('appointment.startsAt >= :from', {
+          from: filters.from,
+        });
+      }
+
+      if (filters.to) {
+        queryBuilder.andWhere('appointment.startsAt < :to', {
+          to: filters.to,
+        });
+      }
+
+      return queryBuilder
+        .orderBy('appointment.startsAt', 'ASC')
+        .skip((filters.page - 1) * filters.pageSize)
+        .take(filters.pageSize)
+        .getMany();
+    } catch (error) {
+      this.handleDatabaseError(error);
     }
-
-    if (filters.patientId !== undefined) {
-      queryBuilder.andWhere('appointment.patientId = :patientId', {
-        patientId: filters.patientId,
-      });
-    }
-
-    if (filters.status !== undefined) {
-      queryBuilder.andWhere('appointment.status = :status', {
-        status: filters.status,
-      });
-    }
-
-    if (filters.from) {
-      queryBuilder.andWhere('appointment.startsAt >= :from', {
-        from: filters.from,
-      });
-    }
-
-    if (filters.to) {
-      queryBuilder.andWhere('appointment.startsAt < :to', {
-        to: filters.to,
-      });
-    }
-
-    return queryBuilder
-      .orderBy('appointment.startsAt', 'ASC')
-      .skip((filters.page - 1) * filters.pageSize)
-      .take(filters.pageSize)
-      .getMany();
   }
 
   async hasPatientConflict(
@@ -139,19 +148,23 @@ export class AppointmentsTypeORMRepository implements AppointmentsRepository {
     startAt: Date,
     endsAt: Date,
   ): Promise<boolean> {
-    const conflictCount = await this.dataSource
-      .getRepository(Appointment)
-      .createQueryBuilder('appointment')
-      .where('appointment.startsAt < :endsAt', { endsAt: endsAt })
-      .andWhere('appointment.endsAt > :startsAt', { startsAt: startAt })
-      .andWhere('appointment.status != :cancelled', {
-        cancelled: 'cancelled',
-      })
-      .andWhere('appointment.deletedAt IS NULL')
-      .andWhere('appointment.patientId = :patientId', { patientId })
-      .getCount();
+    try {
+      const conflictCount = await this.dataSource
+        .getRepository(Appointment)
+        .createQueryBuilder('appointment')
+        .where('appointment.startsAt < :endsAt', { endsAt: endsAt })
+        .andWhere('appointment.endsAt > :startsAt', { startsAt: startAt })
+        .andWhere('appointment.status != :cancelled', {
+          cancelled: 'cancelled',
+        })
+        .andWhere('appointment.deletedAt IS NULL')
+        .andWhere('appointment.patientId = :patientId', { patientId })
+        .getCount();
 
-    return conflictCount > 0;
+      return conflictCount > 0;
+    } catch (error) {
+      this.handleDatabaseError(error);
+    }
   }
 
   async update(
