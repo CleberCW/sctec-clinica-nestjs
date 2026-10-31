@@ -72,6 +72,9 @@ export class PatientsTypeORMRepository implements PatientsRepository {
         ...filters,
         deletedAt: IsNull(),
       },
+      relations: {
+        appointments: true,
+      },
     });
   }
 

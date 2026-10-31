@@ -49,7 +49,7 @@ export class DoctorsController {
   @UseGuards(JwtGuard)
   @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
   async getOne(@Param('id') id: number) {
-    const patient = await this.doctorsService.getOne(id);
+    const patient = await this.doctorsService.getOne({ id: id });
 
     return plainToInstance(DoctorResponseDto, patient, {
       excludeExtraneousValues: true,

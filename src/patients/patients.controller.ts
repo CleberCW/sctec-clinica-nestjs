@@ -20,10 +20,18 @@ import { plainToInstance } from 'class-transformer';
 import { PatientResponseDto } from './dto/patient-response.dto';
 import { GetPatientsDto } from './dto/get-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
+import { MedicalRecordsService } from './medical-records.service';
+import { MedicalRecordEntryRepsonseDto } from './dto/medical-record.response.dto';
+import { CurrentUser } from 'src/@common/decorators/current-user.decorator';
+import type { AuthUserDto } from 'src/users/dto/auth-user.dto';
 
 @Controller('patients')
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  constructor(
+    private readonly patientsService: PatientsService,
+    private readonly medicalRecordsService: MedicalRecordsService,
+  ) {}
 
   @Post()
   @UseGuards(JwtGuard)
@@ -78,5 +86,42 @@ export class PatientsController {
     await this.patientsService.delete(id);
 
     return { message: 'Paciente excluído com sucesso' };
+  }
+
+  @Post('/:id/medical-records')
+  @UseGuards(JwtGuard)
+  @RequireRole([ROLES.ADMIN, ROLES.DOCTOR])
+  async createMedicalRecord(
+    @Param('id') patientId: number,
+    @Body() createMedicalRecordDto: CreateMedicalRecordDto,
+    @CurrentUser() user: AuthUserDto,
+  ) {
+    const patient = await this.medicalRecordsService.createMedicalRecord(
+      patientId,
+      createMedicalRecordDto,
+      user,
+    );
+
+    return plainToInstance(MedicalRecordEntryRepsonseDto, patient, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Get('/:id/medical-records')
+  @UseGuards(JwtGuard)
+  @RequireRole([ROLES.ADMIN, ROLES.DOCTOR])
+  async getMedicalRecords(
+    @Param('id') patientId: number,
+    @CurrentUser() user: AuthUserDto,
+  ) {
+    const medicalRecords =
+      await this.medicalRecordsService.getMedicalRecordsByPatientId(
+        patientId,
+        user,
+      );
+
+    return plainToInstance(MedicalRecordEntryRepsonseDto, medicalRecords, {
+      excludeExtraneousValues: true,
+    });
   }
 }

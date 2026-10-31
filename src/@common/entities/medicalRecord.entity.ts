@@ -52,7 +52,7 @@ export class MedicalRecordEntry {
   correctsEntryId!: number | null;
 
   @Column({ type: 'text' })
-  content!: string;
+  text!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
