@@ -85,7 +85,8 @@
       "src/auth/auth.service.ts",
       "src/appointments/appointments.service.ts",
       "src/doctors/doctors.service.ts",
-      "src/patients/patients.service.ts"
+      "src/patients/patients.service.ts",
+      "src/appointments/appointment-period.rules.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
