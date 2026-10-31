@@ -192,6 +192,29 @@ describe(AppointmentsService.name, () => {
       expect(appointmentsRepository.create).not.toHaveBeenCalled();
     });
 
+    it('uses the duration configured for the specific shift, including a 20-minute slot', async () => {
+      schedule = {
+        ...schedule,
+        startTime: '08:00',
+        endTime: '09:00',
+        slotDurationMinutes: 20,
+      };
+
+      const result = await service.create(dto());
+
+      expect(result.endsAt).toEqual(new Date(startsAt.getTime() + 20 * 60_000));
+    });
+
+    it('rejects when the schedule belongs to another weekday', async () => {
+      schedule = {
+        ...schedule,
+        weekDay: (schedule.weekDay + 1) % 7,
+      };
+
+      await expectError(service.create(dto()), ERROR_CODE.HORARIO_FORA_DA_ESCALA);
+      expect(appointmentsRepository.create).not.toHaveBeenCalled();
+    });
+
     it('rejects a start time that is not aligned to the shift grid', async () => {
       const unaligned = atClinicTime(8, 20);
       await expectError(
