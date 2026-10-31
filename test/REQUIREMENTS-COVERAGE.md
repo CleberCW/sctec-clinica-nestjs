@@ -23,7 +23,7 @@ O Jest coleta cobertura somente de:
 - `src/doctors/doctors.service.ts`
 - `src/patients/patients.service.ts`
 
-O limiar configurado é 80% para statements, branches, functions e lines. A regra de sobreposição e a conversão para o fuso da clínica são funções puras testadas sem infraestrutura.
+O limiar configurado é 80% para statements, branches, functions e lines. A regra de sobreposição e a extração de data/hora UTC são funções puras testadas sem infraestrutura.
 
 ## Limitações importantes
 
@@ -66,3 +66,8 @@ A suíte da seção 4.5 não substitui os testes de aceitação do contrato da s
 - A resposta envelope de paginação (`data` e `meta`) precisa ser conferida nas rotas de listagem, conforme a seção 4.9.1.
 
 A constraint PostgreSQL de exclusão para consultas ativas de médico e paciente foi restaurada na migration que recria o enum de status. Ainda assim, a corrida concorrente descrita na RN10 deve ser confirmada contra PostgreSQL com duas requisições HTTP realmente simultâneas; não é simulada pela suíte unitária.
+
+
+## Convenção temporal adotada pela aplicação
+
+A aplicação opera integralmente em UTC. Os timestamps recebidos pela API devem usar ISO 8601 com sufixo `Z`; datas persistidas e retornadas são instantes UTC serializados em ISO 8601. Os dias da semana e os horários `HH:mm` configurados na escala também são interpretados em UTC. Nenhuma conversão para fuso horário local é aplicada.
