@@ -11,6 +11,7 @@ import { DATASOURCE_TOKEN } from 'src/@common/database/database.providers';
 import { DomainError, ERROR_CODE } from 'src/@common/errors/domain.error';
 import { Doctor } from 'src/@common/entities/doctor.entity';
 import { GetDoctorsDto } from './dto/get-doctors.dto';
+import { APPOINTMENT_STATUSES } from 'src/@common/entities/appointment.entity';
 
 export abstract class DoctorsRepository {
   abstract createWithUser(
@@ -23,6 +24,11 @@ export abstract class DoctorsRepository {
     schedules?: boolean;
     userId?: number;
   }): Promise<Doctor | null>;
+  abstract findCalendar(
+    doctorId: number,
+    from: string,
+    to: string,
+  ): Promise<Doctor | null>;
 }
 
 export const DOCTORS_TYPEORM_REPOSITORY = 'DOCTOR_REPOSITORY';
@@ -121,5 +127,38 @@ export class DoctorsTypeORMRepository implements DoctorsRepository {
         schedules: schedules ?? false,
       },
     });
+  }
+
+  async findCalendar(
+    doctorId: number,
+    from: string,
+    to: string,
+  ): Promise<Doctor | null> {
+    const fromDate = new Date(`${from}T00:00:00.000Z`);
+
+    // Limite exclusivo: meia-noite do dia seguinte ao "to".
+    const toDate = new Date(`${to}T00:00:00.000Z`);
+    toDate.setUTCDate(toDate.getUTCDate() + 1);
+
+    return this.repository
+      .createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.schedules', 'schedule')
+      .leftJoinAndSelect(
+        'doctor.appointments',
+        'appointment',
+        `
+        appointment.startsAt < :toDate
+        AND appointment.endsAt > :fromDate
+        AND appointment.status != :cancelled
+      `,
+        {
+          fromDate,
+          toDate,
+          cancelled: APPOINTMENT_STATUSES.CANCELLED,
+        },
+      )
+      .where('doctor.id = :doctorId', { doctorId })
+      .andWhere('doctor.deletedAt IS NULL')
+      .getOne();
   }
 }
