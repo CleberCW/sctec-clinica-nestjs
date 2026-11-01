@@ -5,9 +5,9 @@ jest.mock(
   'src/@common/entities/role.entity',
   () => ({
     ROLES: {
-      ADMIN: 'ADMIN',
-      SECRETARY: 'SECRETARY',
-      DOCTOR: 'DOCTOR',
+      ADMIN: 'admin',
+      SECRETARY: 'secretary',
+      DOCTOR: 'doctor',
     },
   }),
   { virtual: true },
@@ -66,21 +66,21 @@ describe(MedicalRecordsService.name, () => {
     sub: '30',
     data: {
       email: 'medico@medclinic.com',
-      roles: ['DOCTOR'],
+      roles: ['doctor'],
     },
   };
   const adminUser = {
     sub: '1',
     data: {
       email: 'admin@medclinic.com',
-      roles: ['ADMIN'],
+      roles: ['admin'],
     },
   };
   const secretaryUser = {
     sub: '90',
     data: {
       email: 'secretaria@medclinic.com',
-      roles: ['SECRETARY'],
+      roles: ['secretary'],
     },
   };
 
