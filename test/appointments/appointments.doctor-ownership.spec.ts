@@ -46,18 +46,18 @@ jest.mock('../../src/appointments/appointments.repository', () => ({
 
 describe('AppointmentsService - vínculo entre usuário e médico', () => {
   const appointmentsRepository = {
-    create: jest.fn<() => Promise<unknown>>(),
-    findById: jest.fn<() => Promise<unknown>>(),
-    hasPatientConflict: jest.fn<() => Promise<boolean>>(),
-    hasConflict: jest.fn<() => Promise<boolean>>(),
-    find: jest.fn<() => Promise<unknown>>(),
-    update: jest.fn<() => Promise<unknown>>(),
+    create: jest.fn<(data: object) => Promise<unknown>>(),
+    findById: jest.fn<(id: number) => Promise<unknown>>(),
+    hasPatientConflict: jest.fn<(patientId: number, startsAt: Date, endsAt: Date) => Promise<boolean>>(),
+    hasConflict: jest.fn<(doctorId: number, patientId: number, startsAt: Date, endsAt: Date) => Promise<boolean>>(),
+    find: jest.fn<(filters: object) => Promise<unknown>>(),
+    update: jest.fn<(id: number, data: object) => Promise<unknown>>(),
   };
   const doctorsService = {
-    getOne: jest.fn<() => Promise<unknown>>(),
+    getOne: jest.fn<(options: { id?: number; schedules?: boolean; userId?: number }) => Promise<unknown>>(),
   };
   const patientsService = {
-    getOne: jest.fn<() => Promise<unknown>>(),
+    getOne: jest.fn<(id: number) => Promise<unknown>>(),
   };
 
   let service: AppointmentsService;
