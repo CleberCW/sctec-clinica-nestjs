@@ -103,7 +103,7 @@ describe(AppointmentsTypeORMRepository.name, () => {
       patientId: 10,
       startsAt: new Date('2026-11-02T11:00:00.000Z'),
       endsAt: new Date('2026-11-02T11:30:00.000Z'),
-      status: 'scheduled',
+      status: 'scheduled' as const,
     } satisfies Partial<Appointment>;
     const savedAppointment = {
       id: 41,
