@@ -4,7 +4,7 @@ import { MedicalRecordsService } from '../../src/patients/medical-records.servic
 jest.mock(
   'src/@common/entities/role.entity',
   () => ({
-    ROLES: { ADMIN: 'ADMIN', SECRETARY: 'SECRETARY', DOCTOR: 'DOCTOR' },
+    ROLES: { ADMIN: 'admin', SECRETARY: 'secretary', DOCTOR: 'doctor' },
   }),
   { virtual: true },
 );
@@ -57,7 +57,7 @@ describe('MedicalRecordsService - precedência do papel admin', () => {
     sub: '30',
     data: {
       email: 'medico-admin@medclinic.com',
-      roles: ['ADMIN', 'DOCTOR'],
+      roles: ['admin', 'doctor'],
     },
   };
 
