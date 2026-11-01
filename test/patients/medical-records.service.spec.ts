@@ -38,11 +38,9 @@ jest.mock(
   { virtual: true },
 );
 
-jest.mock(
-  'src/patients/patients.service',
-  () => ({ PatientsService: class PatientsService {} }),
-  { virtual: true },
-);
+jest.mock('../../src/patients/patients.service', () => ({
+  PatientsService: class MockPatientsService {},
+}));
 
 jest.mock('../../src/patients/medical-records.repository', () => ({
   MedicalRecordsRepository: class MedicalRecordsRepository {},
