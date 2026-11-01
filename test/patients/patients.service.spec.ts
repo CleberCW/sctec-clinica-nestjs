@@ -35,7 +35,8 @@ describe(PatientsService.name, () => {
   const patientsRepository = {
     create: jest.fn<(patientData: object) => Promise<unknown>>(),
     find: jest.fn<(query: object) => Promise<unknown>>(),
-    findOne: jest.fn<(filters: { id?: number; cpf?: string }) => Promise<unknown>>(),
+    findOne:
+      jest.fn<(filters: { id?: number; cpf?: string }) => Promise<unknown>>(),
     update: jest.fn<(id: number, data: object) => Promise<unknown>>(),
     delete: jest.fn<(id: number) => Promise<unknown>>(),
   };

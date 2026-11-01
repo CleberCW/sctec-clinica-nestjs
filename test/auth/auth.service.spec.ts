@@ -22,9 +22,9 @@ jest.mock(
   { virtual: true },
 );
 
-jest.mock('src/auth/jwt.service', () => ({ JwtService: class JwtService {} }), {
-  virtual: true,
-});
+jest.mock('../../src/auth/jwt.service', () => ({
+  JwtService: class MockJwtService {},
+}));
 
 jest.mock(
   'src/@common/errors/domain.error',

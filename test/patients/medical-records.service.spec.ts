@@ -49,10 +49,18 @@ jest.mock('../../src/patients/medical-records.repository', () => ({
 describe(MedicalRecordsService.name, () => {
   const medicalRecordsRepository = {
     createMedicalRecord: jest.fn<(record: object) => Promise<unknown>>(),
-    getMedicalRecordsByPatient: jest.fn<(patientId: number, doctorId?: number) => Promise<unknown>>(),
+    getMedicalRecordsByPatient:
+      jest.fn<(patientId: number, doctorId?: number) => Promise<unknown>>(),
   };
   const doctorService = {
-    getOne: jest.fn<(options: { id?: number; schedules?: boolean; userId?: number }) => Promise<unknown>>(),
+    getOne:
+      jest.fn<
+        (options: {
+          id?: number;
+          schedules?: boolean;
+          userId?: number;
+        }) => Promise<unknown>
+      >(),
   };
   const patientService = {
     getOne: jest.fn<(patientId: number) => Promise<unknown>>(),
