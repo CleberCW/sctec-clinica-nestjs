@@ -3,8 +3,8 @@ import { compare } from 'bcrypt';
 import { AuthService } from '../../src/auth/auth.service';
 
 jest.mock('bcrypt', () => ({
-  compare: jest.fn<(...args: any[]) => any>(),
-  hash: jest.fn<(...args: any[]) => any>(),
+  compare: jest.fn<(data: string, encrypted: string) => Promise<boolean>>(),
+  hash: jest.fn<(data: string, saltOrRounds: string | number) => Promise<string>>(),
 }));
 
 jest.mock(
@@ -27,10 +27,10 @@ jest.mock(
 
 describe(AuthService.name, () => {
   const userService = {
-    getUser: jest.fn<(...args: any[]) => any>(),
+    getUser: jest.fn<() => Promise<unknown>>(),
   };
   const jwtService = {
-    sign: jest.fn<(...args: any[]) => any>(),
+    sign: jest.fn<() => string>(),
   };
 
   let service: AuthService;
