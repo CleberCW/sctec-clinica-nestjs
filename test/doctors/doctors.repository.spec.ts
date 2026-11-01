@@ -34,18 +34,18 @@ jest.mock(
 
 describe(DoctorsTypeORMRepository.name, () => {
   const userRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
+    create: jest.fn<(...args: any[]) => any>(),
+    save: jest.fn<(...args: any[]) => any>(),
   };
   const doctorRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
+    create: jest.fn<(...args: any[]) => any>(),
+    save: jest.fn<(...args: any[]) => any>(),
   };
   const manager = {
-    getRepository: jest.fn(),
+    getRepository: jest.fn<(...args: any[]) => any>(),
   };
   const dataSource = {
-    transaction: jest.fn(),
+    transaction: jest.fn<(...args: any[]) => any>(),
   };
 
   let repository: DoctorsTypeORMRepository;
