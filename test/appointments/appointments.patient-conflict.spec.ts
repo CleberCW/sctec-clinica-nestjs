@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { Mock } from 'jest-mock';
 import { AppointmentsTypeORMRepository } from '../../src/appointments/appointments.repository';
 
 jest.mock(
@@ -22,13 +23,13 @@ jest.mock(
 type QueryParameters = Record<string, Date | string | number>;
 
 type QueryBuilderStub = {
-  where: jest.Mock<
+  where: Mock<
     (sql: string, parameters?: QueryParameters) => QueryBuilderStub
   >;
-  andWhere: jest.Mock<
+  andWhere: Mock<
     (sql: string, parameters?: QueryParameters) => QueryBuilderStub
   >;
-  getCount: jest.Mock<() => Promise<number>>;
+  getCount: Mock<() => Promise<number>>;
 };
 
 type ExistingAppointment = {
