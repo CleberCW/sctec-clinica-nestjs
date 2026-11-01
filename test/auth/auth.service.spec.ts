@@ -1,10 +1,19 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import { compare } from 'bcrypt';
 import { AuthService } from '../../src/auth/auth.service';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn<(data: string, encrypted: string) => Promise<boolean>>(),
-  hash: jest.fn<(data: string, saltOrRounds: string | number) => Promise<string>>(),
+  hash: jest.fn<
+    (data: string, saltOrRounds: string | number) => Promise<string>
+  >(),
 }));
 
 jest.mock(
@@ -13,11 +22,9 @@ jest.mock(
   { virtual: true },
 );
 
-jest.mock(
-  'src/auth/jwt.service',
-  () => ({ JwtService: class JwtService {} }),
-  { virtual: true },
-);
+jest.mock('src/auth/jwt.service', () => ({ JwtService: class JwtService {} }), {
+  virtual: true,
+});
 
 jest.mock(
   'src/@common/errors/domain.error',

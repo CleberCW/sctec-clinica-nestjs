@@ -5,7 +5,9 @@ import { DoctorsService } from '../../src/doctors/doctors.service';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn<(data: string, encrypted: string) => Promise<boolean>>(),
-  hash: jest.fn<(data: string, saltOrRounds: string | number) => Promise<string>>(),
+  hash: jest.fn<
+    (data: string, saltOrRounds: string | number) => Promise<string>
+  >(),
 }));
 
 jest.mock(
@@ -129,9 +131,9 @@ describe(DoctorsService.name, () => {
     const transactionError = new Error('Falha ao criar CRM duplicado');
     doctorsRepository.createWithUser.mockRejectedValue(transactionError);
 
-    await expect(
-      service.create(validDoctorDto as never),
-    ).rejects.toBe(transactionError);
+    await expect(service.create(validDoctorDto as never)).rejects.toBe(
+      transactionError,
+    );
   });
 
   it('lista médicos com filtros e paginação recebidos', async () => {
@@ -147,9 +149,9 @@ describe(DoctorsService.name, () => {
     const doctor = { id: 8, schedules: [] };
     doctorsRepository.findOne.mockResolvedValue(doctor);
 
-    await expect(
-      service.getOne({ id: 8, schedules: true }),
-    ).resolves.toBe(doctor);
+    await expect(service.getOne({ id: 8, schedules: true })).resolves.toBe(
+      doctor,
+    );
 
     expect(doctorsRepository.findOne).toHaveBeenCalledWith({
       id: 8,
@@ -197,7 +199,9 @@ describe(DoctorsService.name, () => {
         },
       ],
     };
-    doctorSchedulesRepository.replaceSchedules.mockResolvedValue(schedule.shifts);
+    doctorSchedulesRepository.replaceSchedules.mockResolvedValue(
+      schedule.shifts,
+    );
 
     await expect(service.postSchedule(8, schedule as never)).resolves.toEqual({
       shifts: schedule.shifts,
@@ -256,7 +260,9 @@ describe(DoctorsService.name, () => {
         },
       ],
     };
-    doctorSchedulesRepository.replaceSchedules.mockResolvedValue(schedule.shifts);
+    doctorSchedulesRepository.replaceSchedules.mockResolvedValue(
+      schedule.shifts,
+    );
 
     await expect(service.postSchedule(8, schedule as never)).resolves.toEqual({
       shifts: schedule.shifts,
@@ -280,7 +286,9 @@ describe(DoctorsService.name, () => {
         },
       ],
     };
-    doctorSchedulesRepository.replaceSchedules.mockResolvedValue(schedule.shifts);
+    doctorSchedulesRepository.replaceSchedules.mockResolvedValue(
+      schedule.shifts,
+    );
 
     await expect(service.postSchedule(8, schedule as never)).resolves.toEqual({
       shifts: schedule.shifts,
@@ -334,14 +342,13 @@ describe(DoctorsService.name, () => {
   it('aceita escala vazia para remover todos os turnos', async () => {
     doctorSchedulesRepository.replaceSchedules.mockResolvedValue([]);
 
-    await expect(
-      service.postSchedule(8, { shifts: [] } as never),
-    ).resolves.toEqual({ shifts: [] });
+    await expect(service.postSchedule(8, { shifts: [] })).resolves.toEqual({
+      shifts: [],
+    });
 
-    expect(doctorSchedulesRepository.replaceSchedules).toHaveBeenCalledWith(
-      8,
-      { shifts: [] },
-    );
+    expect(doctorSchedulesRepository.replaceSchedules).toHaveBeenCalledWith(8, {
+      shifts: [],
+    });
   });
 
   it('consulta a escala e devolve a lista de turnos', async () => {
@@ -373,7 +380,7 @@ describe(DoctorsService.name, () => {
       service.getCalendar(8, {
         from: '2026-11-02',
         to: '2026-11-06',
-      } as never),
+      }),
     ).resolves.toEqual({
       workSchedule: { shifts: schedules },
       appointments,
@@ -394,7 +401,7 @@ describe(DoctorsService.name, () => {
       service.getCalendar(8, {
         from: '2026-11-02',
         to: '2026-11-06',
-      } as never),
+      }),
     ).resolves.toEqual({
       workSchedule: { shifts: [] },
       appointments: [],
@@ -408,7 +415,7 @@ describe(DoctorsService.name, () => {
       service.getCalendar(999, {
         from: '2026-11-02',
         to: '2026-11-06',
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 404,

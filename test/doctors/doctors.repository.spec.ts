@@ -9,11 +9,9 @@ jest.mock(
   { virtual: true },
 );
 
-jest.mock(
-  'src/@common/entities/user.entity',
-  () => ({ User: class User {} }),
-  { virtual: true },
-);
+jest.mock('src/@common/entities/user.entity', () => ({ User: class User {} }), {
+  virtual: true,
+});
 
 jest.mock(
   'src/@common/entities/doctor.entity',
@@ -62,24 +60,18 @@ describe(DoctorsTypeORMRepository.name, () => {
     >(),
   };
   const manager = {
-    getRepository: jest.fn<
-      (entity: { name: string }) => EntityRepositoryStub
-    >(),
+    getRepository:
+      jest.fn<(entity: { name: string }) => EntityRepositoryStub>(),
   };
   const dataSource = {
-    transaction: jest.fn<
-      (callback: TransactionCallback) => Promise<unknown>
-    >(),
+    transaction: jest.fn<(callback: TransactionCallback) => Promise<unknown>>(),
   };
 
   let repository: DoctorsTypeORMRepository;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    repository = new DoctorsTypeORMRepository(
-      {} as never,
-      dataSource as never,
-    );
+    repository = new DoctorsTypeORMRepository({} as never, dataSource as never);
 
     manager.getRepository.mockImplementation((entity) => {
       if (entity.name === 'User') return userRepository;
@@ -133,8 +125,8 @@ describe(DoctorsTypeORMRepository.name, () => {
 
     await expect(
       repository.createWithUser(
-        { email: 'helena@medclinic.com' } as never,
-        { crm: 'CRM-SC-54321' } as never,
+        { email: 'helena@medclinic.com' },
+        { crm: 'CRM-SC-54321' },
       ),
     ).rejects.toBe(databaseError);
 
@@ -152,8 +144,8 @@ describe(DoctorsTypeORMRepository.name, () => {
 
     await expect(
       repository.createWithUser(
-        { email: 'helena@medclinic.com' } as never,
-        { crm: 'CRM-SC-54321' } as never,
+        { email: 'helena@medclinic.com' },
+        { crm: 'CRM-SC-54321' },
       ),
     ).rejects.toBe(databaseError);
 
@@ -171,8 +163,8 @@ describe(DoctorsTypeORMRepository.name, () => {
 
     await expect(
       repository.createWithUser(
-        { email: 'duplicado@medclinic.com' } as never,
-        { crm: 'CRM-SC-54321' } as never,
+        { email: 'duplicado@medclinic.com' },
+        { crm: 'CRM-SC-54321' },
       ),
     ).rejects.toMatchObject({
       response: {
@@ -196,8 +188,8 @@ describe(DoctorsTypeORMRepository.name, () => {
 
     await expect(
       repository.createWithUser(
-        { email: 'nova@medclinic.com' } as never,
-        { crm: 'CRM-SC-54321' } as never,
+        { email: 'nova@medclinic.com' },
+        { crm: 'CRM-SC-54321' },
       ),
     ).rejects.toMatchObject({
       response: {
@@ -216,8 +208,8 @@ describe(DoctorsTypeORMRepository.name, () => {
 
     await expect(
       repository.createWithUser(
-        { email: 'nova@medclinic.com' } as never,
-        { crm: 'CRM-SC-54321' } as never,
+        { email: 'nova@medclinic.com' },
+        { crm: 'CRM-SC-54321' },
       ),
     ).rejects.toBe(databaseError);
   });

@@ -92,9 +92,9 @@ describe('AppointmentsService - vínculo entre usuário e médico', () => {
     };
     appointmentsRepository.findById.mockResolvedValue(appointment);
 
-    await expect(
-      service.getById(41, doctorUser as never),
-    ).resolves.toBe(appointment);
+    await expect(service.getById(41, doctorUser as never)).resolves.toBe(
+      appointment,
+    );
 
     expect(doctorsService.getOne).toHaveBeenCalledWith(
       expect.objectContaining({ userId: 30 }),
@@ -134,11 +134,7 @@ describe('AppointmentsService - vínculo entre usuário e médico', () => {
     });
 
     await expect(
-      service.update(
-        41,
-        { status: 'in_progress' },
-        doctorUser as never,
-      ),
+      service.update(41, { status: 'in_progress' }, doctorUser as never),
     ).resolves.toMatchObject({ status: 'in_progress' });
 
     expect(doctorsService.getOne).toHaveBeenCalledWith(

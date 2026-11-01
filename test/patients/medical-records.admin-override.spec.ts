@@ -80,15 +80,12 @@ describe('MedicalRecordsService - precedência do papel admin', () => {
 
   it('mantém acesso de auditoria do admin mesmo quando o usuário também tem perfil doctor', async () => {
     await expect(
-      service.getMedicalRecordsByPatientId(
-        10,
-        adminWhoIsAlsoDoctor as never,
-      ),
+      service.getMedicalRecordsByPatientId(10, adminWhoIsAlsoDoctor as never),
     ).resolves.toEqual([]);
 
     expect(doctorService.getOne).not.toHaveBeenCalled();
-    expect(medicalRecordsRepository.getMedicalRecordsByPatient).toHaveBeenCalledWith(
-      10,
-    );
+    expect(
+      medicalRecordsRepository.getMedicalRecordsByPatient,
+    ).toHaveBeenCalledWith(10);
   });
 });

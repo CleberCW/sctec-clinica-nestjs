@@ -83,7 +83,7 @@ describe(PatientsService.name, () => {
       service.create({
         ...validPatientDto,
         cpf: '111.111.111-11',
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -124,9 +124,7 @@ describe(PatientsService.name, () => {
 
   it('traduz violação de unicidade do CPF para CPF_JA_CADASTRADO', async () => {
     patientsRepository.findOne.mockResolvedValue(null);
-    patientsRepository.create.mockRejectedValue(
-      new DuplicatePatientCpfError(),
-    );
+    patientsRepository.create.mockRejectedValue(new DuplicatePatientCpfError());
 
     await expect(
       service.create(validPatientDto as never),
@@ -143,9 +141,9 @@ describe(PatientsService.name, () => {
     patientsRepository.findOne.mockResolvedValue(null);
     patientsRepository.create.mockRejectedValue(databaseError);
 
-    await expect(
-      service.create(validPatientDto as never),
-    ).rejects.toBe(databaseError);
+    await expect(service.create(validPatientDto as never)).rejects.toBe(
+      databaseError,
+    );
   });
 
   it('lista pacientes delegando filtros e paginação ao repositório', async () => {

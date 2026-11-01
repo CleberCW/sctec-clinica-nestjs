@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import type { Appointment } from '../../src/@common/entities/appointment.entity';
 import { AppointmentsService } from '../../src/appointments/appointments.service';
 
@@ -59,30 +66,34 @@ describe(AppointmentsService.name, () => {
   const appointmentsRepository = {
     create: jest.fn<(value: Partial<Appointment>) => Promise<unknown>>(),
     findById: jest.fn<(id: number) => Promise<unknown>>(),
-    hasPatientConflict: jest.fn<
-      (patientId: number, startsAt: Date, endsAt: Date) => Promise<boolean>
-    >(),
-    hasConflict: jest.fn<
-      (
-        doctorId: number,
-        patientId: number,
-        startsAt: Date,
-        endsAt: Date,
-      ) => Promise<boolean>
-    >(),
+    hasPatientConflict:
+      jest.fn<
+        (patientId: number, startsAt: Date, endsAt: Date) => Promise<boolean>
+      >(),
+    hasConflict:
+      jest.fn<
+        (
+          doctorId: number,
+          patientId: number,
+          startsAt: Date,
+          endsAt: Date,
+        ) => Promise<boolean>
+      >(),
     find: jest.fn<(filters: unknown) => Promise<unknown>>(),
-    update: jest.fn<
-      (id: number, appointment: Partial<Appointment>) => Promise<unknown>
-    >(),
+    update:
+      jest.fn<
+        (id: number, appointment: Partial<Appointment>) => Promise<unknown>
+      >(),
   };
   const doctorsService = {
-    getOne: jest.fn<
-      (options: {
-        id?: number;
-        schedules?: boolean;
-        userId?: number;
-      }) => Promise<unknown>
-    >(),
+    getOne:
+      jest.fn<
+        (options: {
+          id?: number;
+          schedules?: boolean;
+          userId?: number;
+        }) => Promise<unknown>
+      >(),
   };
   const patientsService = {
     getOne: jest.fn<(id: number) => Promise<unknown>>(),
@@ -126,9 +137,8 @@ describe(AppointmentsService.name, () => {
     notes: 'Consulta de rotina',
   };
 
-  const appointmentFixture = (
-    values: Partial<Appointment>,
-  ): Appointment => values as Appointment;
+  const appointmentFixture = (values: Partial<Appointment>): Appointment =>
+    values as Appointment;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -159,7 +169,7 @@ describe(AppointmentsService.name, () => {
   });
 
   it('cria agendamento calculando o fim e persistindo instantes em UTC', async () => {
-    const result = await service.create(validDto as never);
+    const result = await service.create(validDto);
 
     expect(patientsService.getOne).toHaveBeenCalledWith(10);
     expect(doctorsService.getOne).toHaveBeenCalledWith({
@@ -188,7 +198,7 @@ describe(AppointmentsService.name, () => {
     const result = await service.create({
       ...validDto,
       startsAt: '2026-11-02T11:00:00Z',
-    } as never);
+    });
 
     expect(result.endsAt.toISOString()).toBe('2026-11-02T11:30:00.000Z');
   });
@@ -210,7 +220,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: '2026-11-02T02:00:00Z', // domingo, 23:00 local
-      } as never),
+      }),
     ).resolves.toBeDefined();
   });
 
@@ -231,7 +241,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: '2026-11-02T11:10:00Z', // 08:10 local
-      } as never),
+      }),
     ).resolves.toBeDefined();
   });
 
@@ -240,7 +250,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: '2026-11-02T10:00:00Z', // 07:00 local
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 422,
@@ -256,7 +266,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: '2026-11-02T11:20:00Z', // 08:20 local, grade de 30 min
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 422,
@@ -282,7 +292,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: '2026-11-02T14:30:00Z', // 11:30 local; fim previsto 12:00
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 422,
@@ -296,7 +306,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: 'data-invalida',
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -310,7 +320,7 @@ describe(AppointmentsService.name, () => {
       service.create({
         ...validDto,
         startsAt: '2026-10-31T11:00:00Z',
-      } as never),
+      }),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -394,7 +404,7 @@ describe(AppointmentsService.name, () => {
   });
 
   it('envia notas nulas quando não são informadas', async () => {
-    await service.create({ ...validDto, notes: undefined } as never);
+    await service.create({ ...validDto, notes: undefined });
 
     expect(appointmentsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({ notes: null }),
@@ -437,7 +447,7 @@ describe(AppointmentsService.name, () => {
     appointmentsRepository.find.mockResolvedValue(appointments);
 
     await service.getAll(
-      { doctorId: 999, page: 1, pageSize: 10 } as never,
+      { doctorId: 999, page: 1, pageSize: 10 },
       doctorUser as never,
     );
 
@@ -453,10 +463,7 @@ describe(AppointmentsService.name, () => {
   it('permite que admin consulte agendamentos de qualquer médico', async () => {
     appointmentsRepository.find.mockResolvedValue([]);
 
-    await service.getAll(
-      { doctorId: 999 } as never,
-      admin as never,
-    );
+    await service.getAll({ doctorId: 999 }, admin as never);
 
     expect(doctorsService.getOne).not.toHaveBeenCalled();
     expect(appointmentsRepository.find).toHaveBeenCalledWith(
@@ -472,14 +479,14 @@ describe(AppointmentsService.name, () => {
       },
     });
 
-    await expect(
-      service.getAll({} as never, doctorUser as never),
-    ).rejects.toMatchObject({
-      response: {
-        statusCode: 403,
-        code: 'ACESSO_NEGADO',
+    await expect(service.getAll({}, doctorUser as never)).rejects.toMatchObject(
+      {
+        response: {
+          statusCode: 403,
+          code: 'ACESSO_NEGADO',
+        },
       },
-    });
+    );
 
     expect(appointmentsRepository.find).not.toHaveBeenCalled();
   });
@@ -493,17 +500,15 @@ describe(AppointmentsService.name, () => {
     });
     appointmentsRepository.findById.mockResolvedValue(appointment);
 
-    await expect(
-      service.getById(41, doctorUser as never),
-    ).resolves.toBe(appointment);
+    await expect(service.getById(41, doctorUser as never)).resolves.toBe(
+      appointment,
+    );
   });
 
   it('retorna 404 ao consultar agendamento inexistente', async () => {
     appointmentsRepository.findById.mockResolvedValue(null);
 
-    await expect(
-      service.getById(999, admin as never),
-    ).rejects.toMatchObject({
+    await expect(service.getById(999, admin as never)).rejects.toMatchObject({
       response: {
         statusCode: 404,
         code: 'RECURSO_NAO_ENCONTRADO',
@@ -538,9 +543,9 @@ describe(AppointmentsService.name, () => {
     });
     appointmentsRepository.findById.mockResolvedValue(appointment);
 
-    await expect(
-      service.getById(41, admin as never),
-    ).resolves.toBe(appointment);
+    await expect(service.getById(41, admin as never)).resolves.toBe(
+      appointment,
+    );
   });
 
   it('médico responsável inicia consulta agendada', async () => {
@@ -793,9 +798,7 @@ describe(AppointmentsService.name, () => {
       }),
     );
 
-    await expect(
-      service.update(41, {} as never, admin as never),
-    ).rejects.toMatchObject({
+    await expect(service.update(41, {}, admin as never)).rejects.toMatchObject({
       response: {
         statusCode: 400,
         code: 'DADOS_INVALIDOS',

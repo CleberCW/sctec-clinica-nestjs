@@ -5,7 +5,9 @@ import { UserService } from '../../src/users/user.service';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn<(data: string, encrypted: string) => Promise<boolean>>(),
-  hash: jest.fn<(data: string, saltOrRounds: string | number) => Promise<string>>(),
+  hash: jest.fn<
+    (data: string, saltOrRounds: string | number) => Promise<string>
+  >(),
 }));
 
 jest.mock('../../src/users/user.repository', () => ({
@@ -31,10 +33,7 @@ describe(UserService.name, () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new UserService(
-      userRepository as never,
-      roleRepository as never,
-    );
+    service = new UserService(userRepository as never, roleRepository as never);
   });
 
   it('gera o hash da senha e cria o usuário com os perfis encontrados', async () => {
@@ -86,9 +85,7 @@ describe(UserService.name, () => {
   });
 
   it('recusa a criação quando apenas parte dos perfis solicitados existe', async () => {
-    roleRepository.findByNames.mockResolvedValue([
-      { id: 1, name: 'doctor' },
-    ]);
+    roleRepository.findByNames.mockResolvedValue([{ id: 1, name: 'doctor' }]);
     jest.mocked(hash).mockImplementation(() => Promise.resolve('hash-gerado'));
 
     await expect(

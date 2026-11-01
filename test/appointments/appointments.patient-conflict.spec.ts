@@ -23,9 +23,7 @@ jest.mock(
 type QueryParameters = Record<string, Date | string | number>;
 
 type QueryBuilderStub = {
-  where: Mock<
-    (sql: string, parameters?: QueryParameters) => QueryBuilderStub
-  >;
+  where: Mock<(sql: string, parameters?: QueryParameters) => QueryBuilderStub>;
   andWhere: Mock<
     (sql: string, parameters?: QueryParameters) => QueryBuilderStub
   >;
@@ -98,12 +96,14 @@ describe('AppointmentsTypeORMRepository.hasPatientConflict', () => {
   let requestedPatientId: number | undefined;
 
   const queryBuilder: QueryBuilderStub = {
-    where: jest.fn<
-      (sql: string, parameters?: QueryParameters) => QueryBuilderStub
-    >(),
-    andWhere: jest.fn<
-      (sql: string, parameters?: QueryParameters) => QueryBuilderStub
-    >(),
+    where:
+      jest.fn<
+        (sql: string, parameters?: QueryParameters) => QueryBuilderStub
+      >(),
+    andWhere:
+      jest.fn<
+        (sql: string, parameters?: QueryParameters) => QueryBuilderStub
+      >(),
     getCount: jest.fn<() => Promise<number>>(),
   };
   const typeormRepository = {
@@ -130,7 +130,10 @@ describe('AppointmentsTypeORMRepository.hasPatientConflict', () => {
       return queryBuilder;
     });
     queryBuilder.andWhere.mockImplementation((sql, parameters) => {
-      if (sql === 'appointment.endsAt > :startsAt' && parameters?.startsAt instanceof Date) {
+      if (
+        sql === 'appointment.endsAt > :startsAt' &&
+        parameters?.startsAt instanceof Date
+      ) {
         requestedStartsAt = parameters.startsAt;
       }
       if (
@@ -142,7 +145,11 @@ describe('AppointmentsTypeORMRepository.hasPatientConflict', () => {
       return queryBuilder;
     });
     queryBuilder.getCount.mockImplementation(() => {
-      if (!requestedStartsAt || !requestedEndsAt || requestedPatientId === undefined) {
+      if (
+        !requestedStartsAt ||
+        !requestedEndsAt ||
+        requestedPatientId === undefined
+      ) {
         throw new Error('Parâmetros de conflito não foram capturados.');
       }
 

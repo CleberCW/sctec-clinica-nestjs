@@ -119,7 +119,7 @@ describe(MedicalRecordsService.name, () => {
   it('permite que médico com vínculo em consulta em andamento crie prontuário', async () => {
     const result = await service.createMedicalRecord(
       10,
-      { text: 'Anotação clínica' } as never,
+      { text: 'Anotação clínica' },
       doctorUser as never,
     );
 
@@ -153,7 +153,7 @@ describe(MedicalRecordsService.name, () => {
     await expect(
       service.createMedicalRecord(
         10,
-        { text: 'Registro após consulta' } as never,
+        { text: 'Registro após consulta' },
         doctorUser as never,
       ),
     ).resolves.toBeDefined();
@@ -170,7 +170,7 @@ describe(MedicalRecordsService.name, () => {
 
     await service.createMedicalRecord(
       10,
-      { text: 'Anotação' } as never,
+      { text: 'Anotação' },
       doctorUser as never,
     );
 
@@ -182,7 +182,7 @@ describe(MedicalRecordsService.name, () => {
   it('usa appointmentId informado quando fornecido', async () => {
     await service.createMedicalRecord(
       10,
-      { text: 'Anotação', appointmentId: 41 } as never,
+      { text: 'Anotação', appointmentId: 41 },
       doctorUser as never,
     );
 
@@ -208,11 +208,10 @@ describe(MedicalRecordsService.name, () => {
 
   it('recusa gravação quando token não contém identificador numérico', async () => {
     await expect(
-      service.createMedicalRecord(
-        10,
-        { text: 'Anotação' } as never,
-        { ...doctorUser, sub: 'invalid' } as never,
-      ),
+      service.createMedicalRecord(10, { text: 'Anotação' }, {
+        ...doctorUser,
+        sub: 'invalid',
+      } as never),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -227,7 +226,7 @@ describe(MedicalRecordsService.name, () => {
     await expect(
       service.createMedicalRecord(
         Number.NaN,
-        { text: 'Anotação' } as never,
+        { text: 'Anotação' },
         doctorUser as never,
       ),
     ).rejects.toMatchObject({
@@ -249,7 +248,7 @@ describe(MedicalRecordsService.name, () => {
     await expect(
       service.createMedicalRecord(
         999,
-        { text: 'Anotação' } as never,
+        { text: 'Anotação' },
         doctorUser as never,
       ),
     ).rejects.toMatchObject({
@@ -273,7 +272,7 @@ describe(MedicalRecordsService.name, () => {
     await expect(
       service.createMedicalRecord(
         10,
-        { text: 'Anotação' } as never,
+        { text: 'Anotação' },
         doctorUser as never,
       ),
     ).rejects.toMatchObject({
@@ -296,7 +295,7 @@ describe(MedicalRecordsService.name, () => {
     await expect(
       service.createMedicalRecord(
         10,
-        { text: 'Anotação' } as never,
+        { text: 'Anotação' },
         doctorUser as never,
       ),
     ).rejects.toMatchObject({
@@ -312,15 +311,13 @@ describe(MedicalRecordsService.name, () => {
   it('recusa vínculo de consulta concluída pertencente a outro médico', async () => {
     patientService.getOne.mockResolvedValue({
       id: 10,
-      appointments: [
-        { id: 42, doctorId: 99, status: 'done' },
-      ],
+      appointments: [{ id: 42, doctorId: 99, status: 'done' }],
     });
 
     await expect(
       service.createMedicalRecord(
         10,
-        { text: 'Anotação' } as never,
+        { text: 'Anotação' },
         doctorUser as never,
       ),
     ).rejects.toMatchObject({
@@ -336,10 +333,9 @@ describe(MedicalRecordsService.name, () => {
       service.getMedicalRecordsByPatientId(10, doctorUser as never),
     ).resolves.toEqual([]);
 
-    expect(medicalRecordsRepository.getMedicalRecordsByPatient).toHaveBeenCalledWith(
-      10,
-      3,
-    );
+    expect(
+      medicalRecordsRepository.getMedicalRecordsByPatient,
+    ).toHaveBeenCalledWith(10, 3);
   });
 
   it('permite admin consultar prontuário para auditoria sem filtro de médico', async () => {
@@ -347,18 +343,16 @@ describe(MedicalRecordsService.name, () => {
       service.getMedicalRecordsByPatientId(10, adminUser as never),
     ).resolves.toEqual([]);
 
-    expect(medicalRecordsRepository.getMedicalRecordsByPatient).toHaveBeenCalledWith(
-      10,
-    );
+    expect(
+      medicalRecordsRepository.getMedicalRecordsByPatient,
+    ).toHaveBeenCalledWith(10);
     expect(doctorService.getOne).not.toHaveBeenCalled();
   });
 
   it('nega leitura a médico sem vínculo', async () => {
     patientService.getOne.mockResolvedValue({
       id: 10,
-      appointments: [
-        { id: 41, doctorId: 99, status: 'done' },
-      ],
+      appointments: [{ id: 41, doctorId: 99, status: 'done' }],
     });
 
     await expect(
@@ -370,7 +364,9 @@ describe(MedicalRecordsService.name, () => {
       },
     });
 
-    expect(medicalRecordsRepository.getMedicalRecordsByPatient).not.toHaveBeenCalled();
+    expect(
+      medicalRecordsRepository.getMedicalRecordsByPatient,
+    ).not.toHaveBeenCalled();
   });
 
   it('nega leitura à secretaria', async () => {
@@ -406,10 +402,10 @@ describe(MedicalRecordsService.name, () => {
 
   it('recusa leitura quando token de usuário está sem sub', async () => {
     await expect(
-      service.getMedicalRecordsByPatientId(
-        10,
-        { ...adminUser, sub: undefined } as never,
-      ),
+      service.getMedicalRecordsByPatientId(10, {
+        ...adminUser,
+        sub: undefined,
+      } as never),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,
@@ -420,10 +416,7 @@ describe(MedicalRecordsService.name, () => {
 
   it('recusa leitura quando id do paciente é inválido', async () => {
     await expect(
-      service.getMedicalRecordsByPatientId(
-        Number.NaN,
-        adminUser as never,
-      ),
+      service.getMedicalRecordsByPatientId(Number.NaN, adminUser as never),
     ).rejects.toMatchObject({
       response: {
         statusCode: 400,

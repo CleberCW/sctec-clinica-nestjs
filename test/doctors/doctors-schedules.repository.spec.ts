@@ -18,9 +18,7 @@ type ScheduleRepositoryStub = {
   delete: Mock<(criteria: { doctorId: number }) => Promise<unknown>>;
   create: Mock<(value: object) => object>;
   save: Mock<(entities: unknown[]) => Promise<unknown>>;
-  find: Mock<
-    (options: { where: { doctorId: number } }) => Promise<unknown>
-  >;
+  find: Mock<(options: { where: { doctorId: number } }) => Promise<unknown>>;
 };
 
 type TransactionManagerStub = {
@@ -44,9 +42,7 @@ describe(DoctorSchedulesTypeORMRepository.name, () => {
     getRepository: jest.fn<() => ScheduleRepositoryStub>(),
   };
   const dataSource = {
-    transaction: jest.fn<
-      (callback: TransactionCallback) => Promise<unknown>
-    >(),
+    transaction: jest.fn<(callback: TransactionCallback) => Promise<unknown>>(),
     getRepository: jest.fn<() => ScheduleRepositoryStub>(),
   };
 
@@ -95,7 +91,7 @@ describe(DoctorSchedulesTypeORMRepository.name, () => {
     scheduleRepository.save.mockResolvedValue([]);
 
     await expect(
-      repository.replaceSchedules(3, { shifts: [] } as never),
+      repository.replaceSchedules(3, { shifts: [] }),
     ).resolves.toEqual([]);
 
     expect(scheduleRepository.delete).toHaveBeenCalledWith({ doctorId: 3 });
@@ -107,19 +103,16 @@ describe(DoctorSchedulesTypeORMRepository.name, () => {
     scheduleRepository.save.mockRejectedValue(databaseError);
 
     await expect(
-      repository.replaceSchedules(
-        3,
-        {
-          shifts: [
-            {
-              weekDay: 1,
-              startTime: '08:00',
-              endTime: '12:00',
-              slotDurationMinutes: 30,
-            },
-          ],
-        } as never,
-      ),
+      repository.replaceSchedules(3, {
+        shifts: [
+          {
+            weekDay: 1,
+            startTime: '08:00',
+            endTime: '12:00',
+            slotDurationMinutes: 30,
+          },
+        ],
+      } as never),
     ).rejects.toBe(databaseError);
 
     expect(dataSource.transaction).toHaveBeenCalledTimes(1);
