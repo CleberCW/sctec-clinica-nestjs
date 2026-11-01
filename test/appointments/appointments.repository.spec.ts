@@ -22,11 +22,11 @@ jest.mock(
 
 describe(AppointmentsTypeORMRepository.name, () => {
   const appointmentRepository = {
-    create: jest.fn(),
-    save: jest.fn(),
+    create: jest.fn<(...args: any[]) => any>(),
+    save: jest.fn<(...args: any[]) => any>(),
   };
   const dataSource = {
-    getRepository: jest.fn(),
+    getRepository: jest.fn<(...args: any[]) => any>(),
   };
 
   let repository: AppointmentsTypeORMRepository;
