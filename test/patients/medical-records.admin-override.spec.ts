@@ -41,14 +41,14 @@ jest.mock('../../src/patients/medical-records.repository', () => ({
 
 describe('MedicalRecordsService - precedência do papel admin', () => {
   const medicalRecordsRepository = {
-    createMedicalRecord: jest.fn(),
-    getMedicalRecordsByPatient: jest.fn(),
+    createMedicalRecord: jest.fn<(...args: any[]) => any>(),
+    getMedicalRecordsByPatient: jest.fn<(...args: any[]) => any>(),
   };
   const doctorService = {
-    getOne: jest.fn(),
+    getOne: jest.fn<(...args: any[]) => any>(),
   };
   const patientService = {
-    getOne: jest.fn(),
+    getOne: jest.fn<(...args: any[]) => any>(),
   };
 
   let service: MedicalRecordsService;
