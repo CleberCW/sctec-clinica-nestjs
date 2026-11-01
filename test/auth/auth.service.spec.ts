@@ -54,7 +54,7 @@ describe(AuthService.name, () => {
     };
 
     userService.getUser.mockResolvedValue(user);
-    jest.mocked(compare).mockImplementation(async () => true);
+    jest.mocked(compare).mockImplementation(() => Promise.resolve(true));
     jwtService.sign.mockReturnValue('token-assinado');
 
     await expect(
@@ -105,7 +105,7 @@ describe(AuthService.name, () => {
       password: '$2b$10$hash-armazenado',
       roles: [{ name: 'doctor' }],
     });
-    jest.mocked(compare).mockImplementation(async () => false);
+    jest.mocked(compare).mockImplementation(() => Promise.resolve(false));
 
     await expect(
       service.login({
@@ -129,7 +129,7 @@ describe(AuthService.name, () => {
       password: '$2b$10$outro-hash',
       roles: [],
     });
-    jest.mocked(compare).mockImplementation(async () => false);
+    jest.mocked(compare).mockImplementation(() => Promise.resolve(false));
 
     await expect(
       service.login({
