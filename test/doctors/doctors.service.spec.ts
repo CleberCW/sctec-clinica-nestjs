@@ -90,7 +90,7 @@ describe(DoctorsService.name, () => {
     const doctor = { id: 8, crm: validDoctorDto.crm };
 
     roleRepository.findOne.mockResolvedValue(doctorRole);
-    jest.mocked(hash).mockResolvedValue('senha-hash');
+    jest.mocked(hash).mockImplementation(async () => 'senha-hash');
     doctorsRepository.createWithUser.mockResolvedValue(doctor);
 
     await expect(service.create(validDoctorDto as never)).resolves.toBe(doctor);
@@ -125,7 +125,7 @@ describe(DoctorsService.name, () => {
 
   it('propaga falha da operação atômica do repositório', async () => {
     roleRepository.findOne.mockResolvedValue({ id: 3, name: 'doctor' });
-    jest.mocked(hash).mockResolvedValue('senha-hash');
+    jest.mocked(hash).mockImplementation(async () => 'senha-hash');
     const transactionError = new Error('Falha ao criar CRM duplicado');
     doctorsRepository.createWithUser.mockRejectedValue(transactionError);
 
