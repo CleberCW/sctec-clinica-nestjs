@@ -26,7 +26,7 @@ jest.mock(
 jest.mock(
   'src/@common/entities/role.entity',
   () => ({
-    ROLES: { ADMIN: 'ADMIN', SECRETARY: 'SECRETARY', DOCTOR: 'DOCTOR' },
+    ROLES: { ADMIN: 'admin', SECRETARY: 'secretary', DOCTOR: 'doctor' },
   }),
   { virtual: true },
 );
@@ -66,7 +66,7 @@ describe('AppointmentsService - vínculo entre usuário e médico', () => {
     sub: '30',
     data: {
       email: 'medico@medclinic.com',
-      roles: ['DOCTOR'],
+      roles: ['doctor'],
     },
   };
 
