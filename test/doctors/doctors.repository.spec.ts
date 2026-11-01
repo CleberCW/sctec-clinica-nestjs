@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { Mock } from 'jest-mock';
 import { QueryFailedError } from 'typeorm';
 import { DoctorsTypeORMRepository } from '../../src/doctors/doctors.repository';
 
@@ -33,8 +34,8 @@ jest.mock(
 );
 
 type EntityRepositoryStub = {
-  create: jest.Mock<(value: object) => Record<string, unknown>>;
-  save: jest.Mock<
+  create: Mock<(value: object) => Record<string, unknown>>;
+  save: Mock<
     (value: Record<string, unknown>) => Promise<Record<string, unknown>>
   >;
 };
