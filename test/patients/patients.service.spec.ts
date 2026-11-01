@@ -33,11 +33,11 @@ jest.mock(
 
 describe(PatientsService.name, () => {
   const patientsRepository = {
-    create: jest.fn(),
-    find: jest.fn(),
-    findOne: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
+    create: jest.fn<(...args: any[]) => any>(),
+    find: jest.fn<(...args: any[]) => any>(),
+    findOne: jest.fn<(...args: any[]) => any>(),
+    update: jest.fn<(...args: any[]) => any>(),
+    delete: jest.fn<(...args: any[]) => any>(),
   };
 
   let service: PatientsService;
