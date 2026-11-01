@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { Mock } from 'jest-mock';
 import { DoctorSchedulesTypeORMRepository } from '../../src/doctors/doctors-schedules.repository';
 
 jest.mock(
@@ -14,10 +15,10 @@ jest.mock(
 );
 
 type ScheduleRepositoryStub = {
-  delete: jest.Mock<(criteria: { doctorId: number }) => Promise<unknown>>;
-  create: jest.Mock<(value: object) => object>;
-  save: jest.Mock<(entities: unknown[]) => Promise<unknown>>;
-  find: jest.Mock<
+  delete: Mock<(criteria: { doctorId: number }) => Promise<unknown>>;
+  create: Mock<(value: object) => object>;
+  save: Mock<(entities: unknown[]) => Promise<unknown>>;
+  find: Mock<
     (options: { where: { doctorId: number } }) => Promise<unknown>
   >;
 };
