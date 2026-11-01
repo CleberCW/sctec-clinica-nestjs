@@ -21,12 +21,12 @@ jest.mock('../../src/roles/role.repository', () => ({
 
 describe(UserService.name, () => {
   const userRepository = {
-    createAndSaveUser: jest.fn<() => Promise<unknown>>(),
-    getUserByEmail: jest.fn<() => Promise<unknown>>(),
+    createAndSaveUser: jest.fn<(userData: object) => Promise<unknown>>(),
+    getUserByEmail: jest.fn<(email: string) => Promise<unknown>>(),
   };
   const roleRepository = {
-    findByNames: jest.fn<() => Promise<unknown>>(),
-    findOne: jest.fn<() => Promise<unknown>>(),
+    findByNames: jest.fn<(roleNames: string[]) => Promise<unknown>>(),
+    findOne: jest.fn<(roleName: string) => Promise<unknown>>(),
   };
 
   let service: UserService;
