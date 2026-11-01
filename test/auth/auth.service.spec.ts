@@ -34,10 +34,10 @@ jest.mock(
 
 describe(AuthService.name, () => {
   const userService = {
-    getUser: jest.fn<() => Promise<unknown>>(),
+    getUser: jest.fn<(email: string) => Promise<unknown>>(),
   };
   const jwtService = {
-    sign: jest.fn<() => string>(),
+    sign: jest.fn<(payload: object) => string>(),
   };
 
   let service: AuthService;
