@@ -19,6 +19,25 @@ jest.mock(
   { virtual: true },
 );
 
+type QueryParameters = Record<string, Date | string | number>;
+
+type QueryBuilderStub = {
+  where: jest.Mock<
+    (sql: string, parameters?: QueryParameters) => QueryBuilderStub
+  >;
+  andWhere: jest.Mock<
+    (sql: string, parameters?: QueryParameters) => QueryBuilderStub
+  >;
+  getCount: jest.Mock<() => Promise<number>>;
+};
+
+type ExistingAppointment = {
+  patientId: number;
+  status: string;
+  startsAt: Date;
+  endsAt: Date;
+};
+
 type IntervalCase = {
   description: string;
   existingStartsAt: string;
@@ -72,64 +91,72 @@ const cases: IntervalCase[] = [
 ];
 
 describe('AppointmentsTypeORMRepository.hasPatientConflict', () => {
-  let existingAppointment: {
-    patientId: number;
-    status: string;
-    startsAt: Date;
-    endsAt: Date;
-  };
+  let existingAppointment: ExistingAppointment;
+  let requestedStartsAt: Date | undefined;
+  let requestedEndsAt: Date | undefined;
+  let requestedPatientId: number | undefined;
 
-  const queryBuilder = {
-    where: jest.fn<(...args: any[]) => any>(),
-    andWhere: jest.fn<(...args: any[]) => any>(),
-    getCount: jest.fn<(...args: any[]) => any>(),
+  const queryBuilder: QueryBuilderStub = {
+    where: jest.fn<
+      (sql: string, parameters?: QueryParameters) => QueryBuilderStub
+    >(),
+    andWhere: jest.fn<
+      (sql: string, parameters?: QueryParameters) => QueryBuilderStub
+    >(),
+    getCount: jest.fn<() => Promise<number>>(),
   };
   const typeormRepository = {
-    createQueryBuilder: jest.fn<(...args: any[]) => any>(),
+    createQueryBuilder: jest.fn<(_alias: string) => QueryBuilderStub>(),
   };
   const dataSource = {
-    getRepository: jest.fn<(...args: any[]) => any>(),
+    getRepository: jest.fn<() => typeof typeormRepository>(),
   };
 
   let repository: AppointmentsTypeORMRepository;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    requestedStartsAt = undefined;
+    requestedEndsAt = undefined;
+    requestedPatientId = undefined;
+
     repository = new AppointmentsTypeORMRepository(dataSource as never);
 
-    queryBuilder.where.mockReturnValue(queryBuilder);
-    queryBuilder.andWhere.mockReturnValue(queryBuilder);
-    typeormRepository.createQueryBuilder.mockReturnValue(queryBuilder);
-    dataSource.getRepository.mockReturnValue(typeormRepository);
-
+    queryBuilder.where.mockImplementation((_sql, parameters) => {
+      if (parameters?.endsAt instanceof Date) {
+        requestedEndsAt = parameters.endsAt;
+      }
+      return queryBuilder;
+    });
+    queryBuilder.andWhere.mockImplementation((sql, parameters) => {
+      if (sql === 'appointment.endsAt > :startsAt' && parameters?.startsAt instanceof Date) {
+        requestedStartsAt = parameters.startsAt;
+      }
+      if (
+        sql === 'appointment.patientId = :patientId' &&
+        typeof parameters?.patientId === 'number'
+      ) {
+        requestedPatientId = parameters.patientId;
+      }
+      return queryBuilder;
+    });
     queryBuilder.getCount.mockImplementation(() => {
-      const whereCalls = queryBuilder.where.mock.calls;
-      const andWhereCalls = queryBuilder.andWhere.mock.calls;
-      const parameters = Object.assign(
-        {},
-        ...whereCalls.map(([, values]) => values ?? {}),
-        ...andWhereCalls.map(([, values]) => values ?? {}),
-      ) as {
-        startsAt: Date;
-        endsAt: Date;
-        patientId: number;
-        cancelled: string;
-      };
+      if (!requestedStartsAt || !requestedEndsAt || requestedPatientId === undefined) {
+        throw new Error('Parâmetros de conflito não foram capturados.');
+      }
 
       const overlaps =
-        existingAppointment.startsAt.getTime() <
-          new Date(parameters.endsAt).getTime() &&
-        existingAppointment.endsAt.getTime() >
-          new Date(parameters.startsAt).getTime();
-
+        existingAppointment.startsAt.getTime() < requestedEndsAt.getTime() &&
+        existingAppointment.endsAt.getTime() > requestedStartsAt.getTime();
       const isSamePatient =
-        existingAppointment.patientId === parameters.patientId;
-      const isActive = existingAppointment.status !== parameters.cancelled;
+        existingAppointment.patientId === requestedPatientId;
+      const isActive = existingAppointment.status !== 'cancelled';
 
-      return Promise.resolve(
-        overlaps && isSamePatient && isActive ? 1 : 0,
-      );
+      return Promise.resolve(overlaps && isSamePatient && isActive ? 1 : 0);
     });
+
+    typeormRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+    dataSource.getRepository.mockReturnValue(typeormRepository);
   });
 
   it.each(cases)('$description', async (scenario) => {
