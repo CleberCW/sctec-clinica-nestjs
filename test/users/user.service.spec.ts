@@ -48,7 +48,7 @@ describe(UserService.name, () => {
     };
 
     roleRepository.findByNames.mockResolvedValue([role]);
-    jest.mocked(hash).mockImplementation(async () => 'hash-gerado');
+    jest.mocked(hash).mockImplementation(() => Promise.resolve('hash-gerado'));
     userRepository.createAndSaveUser.mockResolvedValue(createdUser);
 
     const result = await service.registerUser({
@@ -71,7 +71,7 @@ describe(UserService.name, () => {
 
   it('recusa a criação quando o repositório não encontra nenhum dos perfis', async () => {
     roleRepository.findByNames.mockResolvedValue(null);
-    jest.mocked(hash).mockImplementation(async () => 'hash-gerado');
+    jest.mocked(hash).mockImplementation(() => Promise.resolve('hash-gerado'));
 
     await expect(
       service.registerUser({
@@ -89,7 +89,7 @@ describe(UserService.name, () => {
     roleRepository.findByNames.mockResolvedValue([
       { id: 1, name: 'doctor' },
     ]);
-    jest.mocked(hash).mockImplementation(async () => 'hash-gerado');
+    jest.mocked(hash).mockImplementation(() => Promise.resolve('hash-gerado'));
 
     await expect(
       service.registerUser({
@@ -107,7 +107,7 @@ describe(UserService.name, () => {
     roleRepository.findByNames.mockResolvedValue([
       { id: 1, name: 'secretary' },
     ]);
-    jest.mocked(hash).mockImplementation(async () => 'hash-gerado');
+    jest.mocked(hash).mockImplementation(() => Promise.resolve('hash-gerado'));
     userRepository.createAndSaveUser.mockRejectedValue(
       new Error('Falha de persistência'),
     );
