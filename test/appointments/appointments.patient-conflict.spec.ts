@@ -80,15 +80,15 @@ describe('AppointmentsTypeORMRepository.hasPatientConflict', () => {
   };
 
   const queryBuilder = {
-    where: jest.fn(),
-    andWhere: jest.fn(),
-    getCount: jest.fn(),
+    where: jest.fn<(...args: any[]) => any>(),
+    andWhere: jest.fn<(...args: any[]) => any>(),
+    getCount: jest.fn<(...args: any[]) => any>(),
   };
   const typeormRepository = {
-    createQueryBuilder: jest.fn(),
+    createQueryBuilder: jest.fn<(...args: any[]) => any>(),
   };
   const dataSource = {
-    getRepository: jest.fn(),
+    getRepository: jest.fn<(...args: any[]) => any>(),
   };
 
   let repository: AppointmentsTypeORMRepository;
