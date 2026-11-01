@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { QueryFailedError } from 'typeorm';
+import type { Appointment } from '../../src/@common/entities/appointment.entity';
 import { AppointmentsTypeORMRepository } from '../../src/appointments/appointments.repository';
 
 jest.mock(
@@ -22,11 +23,11 @@ jest.mock(
 
 describe(AppointmentsTypeORMRepository.name, () => {
   const appointmentRepository = {
-    create: jest.fn<(...args: any[]) => any>(),
-    save: jest.fn<(...args: any[]) => any>(),
+    create: jest.fn<(data: Partial<Appointment>) => Appointment>(),
+    save: jest.fn<(appointment: Appointment) => Promise<Appointment>>(),
   };
   const dataSource = {
-    getRepository: jest.fn<(...args: any[]) => any>(),
+    getRepository: jest.fn<() => typeof appointmentRepository>(),
   };
 
   let repository: AppointmentsTypeORMRepository;
@@ -35,7 +36,9 @@ describe(AppointmentsTypeORMRepository.name, () => {
     jest.clearAllMocks();
     repository = new AppointmentsTypeORMRepository(dataSource as never);
     dataSource.getRepository.mockReturnValue(appointmentRepository);
-    appointmentRepository.create.mockImplementation((value) => value);
+    appointmentRepository.create.mockImplementation(
+      (value) => value as Appointment,
+    );
   });
 
   it('mapeia violação da restrição de sobreposição do médico para HORARIO_INDISPONIVEL', async () => {
@@ -101,8 +104,11 @@ describe(AppointmentsTypeORMRepository.name, () => {
       startsAt: new Date('2026-11-02T11:00:00.000Z'),
       endsAt: new Date('2026-11-02T11:30:00.000Z'),
       status: 'scheduled',
-    };
-    const savedAppointment = { id: 41, ...appointmentData };
+    } satisfies Partial<Appointment>;
+    const savedAppointment = {
+      id: 41,
+      ...appointmentData,
+    } as Appointment;
     appointmentRepository.save.mockResolvedValue(savedAppointment);
 
     await expect(repository.create(appointmentData)).resolves.toBe(
