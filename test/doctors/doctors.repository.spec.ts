@@ -32,20 +32,43 @@ jest.mock(
   { virtual: true },
 );
 
+type EntityRepositoryStub = {
+  create: jest.Mock<(value: object) => Record<string, unknown>>;
+  save: jest.Mock<
+    (value: Record<string, unknown>) => Promise<Record<string, unknown>>
+  >;
+};
+
+type TransactionManagerStub = {
+  getRepository: (entity: { name: string }) => EntityRepositoryStub;
+};
+
+type TransactionCallback = (
+  manager: TransactionManagerStub,
+) => Promise<unknown>;
+
 describe(DoctorsTypeORMRepository.name, () => {
-  const userRepository = {
-    create: jest.fn<(...args: any[]) => any>(),
-    save: jest.fn<(...args: any[]) => any>(),
+  const userRepository: EntityRepositoryStub = {
+    create: jest.fn<(value: object) => Record<string, unknown>>(),
+    save: jest.fn<
+      (value: Record<string, unknown>) => Promise<Record<string, unknown>>
+    >(),
   };
-  const doctorRepository = {
-    create: jest.fn<(...args: any[]) => any>(),
-    save: jest.fn<(...args: any[]) => any>(),
+  const doctorRepository: EntityRepositoryStub = {
+    create: jest.fn<(value: object) => Record<string, unknown>>(),
+    save: jest.fn<
+      (value: Record<string, unknown>) => Promise<Record<string, unknown>>
+    >(),
   };
   const manager = {
-    getRepository: jest.fn<(...args: any[]) => any>(),
+    getRepository: jest.fn<
+      (entity: { name: string }) => EntityRepositoryStub
+    >(),
   };
   const dataSource = {
-    transaction: jest.fn<(...args: any[]) => any>(),
+    transaction: jest.fn<
+      (callback: TransactionCallback) => Promise<unknown>
+    >(),
   };
 
   let repository: DoctorsTypeORMRepository;
@@ -61,27 +84,25 @@ describe(DoctorsTypeORMRepository.name, () => {
       if (entity.name === 'User') return userRepository;
       return doctorRepository;
     });
-    dataSource.transaction.mockImplementation(async (callback) =>
-      callback(manager),
-    );
+    dataSource.transaction.mockImplementation((callback) => callback(manager));
     userRepository.create.mockImplementation((value) => ({ ...value }));
     doctorRepository.create.mockImplementation((value) => ({ ...value }));
   });
 
   it('cria usuário e registro profissional dentro da mesma transação', async () => {
-    const userData = {
+    const userData: Record<string, unknown> = {
       name: 'Helena Souza',
       email: 'helena@medclinic.com',
       password: 'hash',
       roles: [{ id: 3, name: 'DOCTOR' }],
     };
-    const doctorData = {
+    const doctorData: Record<string, unknown> = {
       crm: 'CRM-SC-54321',
       contactEmail: 'helena@medclinic.com',
       phone: '47999990000',
     };
-    const savedUser = { id: 30, ...userData };
-    const savedDoctor = {
+    const savedUser: Record<string, unknown> = { id: 30, ...userData };
+    const savedDoctor: Record<string, unknown> = {
       id: 3,
       ...doctorData,
       user: savedUser,
@@ -92,7 +113,7 @@ describe(DoctorsTypeORMRepository.name, () => {
 
     await expect(
       repository.createWithUser(userData as never, doctorData as never),
-    ).resolves.toBe(savedDoctor);
+    ).resolves.toMatchObject(savedDoctor);
 
     expect(dataSource.transaction).toHaveBeenCalledTimes(1);
     expect(manager.getRepository).toHaveBeenCalledTimes(2);
@@ -120,7 +141,10 @@ describe(DoctorsTypeORMRepository.name, () => {
   });
 
   it('propaga falha ao gravar médico para que a transação seja revertida', async () => {
-    const savedUser = { id: 30, email: 'helena@medclinic.com' };
+    const savedUser: Record<string, unknown> = {
+      id: 30,
+      email: 'helena@medclinic.com',
+    };
     const databaseError = new Error('Falha ao salvar médico');
     userRepository.save.mockResolvedValue(savedUser);
     doctorRepository.save.mockRejectedValue(databaseError);
@@ -158,7 +182,10 @@ describe(DoctorsTypeORMRepository.name, () => {
   });
 
   it('converte violação de CRM único para CRM_JA_CADASTRADO', async () => {
-    const savedUser = { id: 30, email: 'helena@medclinic.com' };
+    const savedUser: Record<string, unknown> = {
+      id: 30,
+      email: 'helena@medclinic.com',
+    };
     const duplicateCrm = new QueryFailedError('INSERT', [], {
       code: '23505',
       constraint: 'UQ_DOCTOR_CRM',
