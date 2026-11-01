@@ -54,18 +54,18 @@ jest.mock('../../src/doctors/doctors-schedules.repository', () => ({
 
 describe(DoctorsService.name, () => {
   const doctorsRepository = {
-    createWithUser: jest.fn<() => Promise<unknown>>(),
-    find: jest.fn<() => Promise<unknown>>(),
-    findOne: jest.fn<() => Promise<unknown>>(),
-    findCalendar: jest.fn<() => Promise<unknown>>(),
+    createWithUser: jest.fn<(userData: object, doctorData: object) => Promise<unknown>>(),
+    find: jest.fn<(query: object) => Promise<unknown>>(),
+    findOne: jest.fn<(options: { id?: number; schedules?: boolean; userId?: number }) => Promise<unknown>>(),
+    findCalendar: jest.fn<(doctorId: number, from: string, to: string) => Promise<unknown>>(),
   };
   const roleRepository = {
-    findOne: jest.fn<() => Promise<unknown>>(),
-    findByNames: jest.fn<() => Promise<unknown>>(),
+    findOne: jest.fn<(role: string) => Promise<unknown>>(),
+    findByNames: jest.fn<(roles: string[]) => Promise<unknown>>(),
   };
   const doctorSchedulesRepository = {
-    replaceSchedules: jest.fn<() => Promise<unknown>>(),
-    findByDoctorId: jest.fn<() => Promise<unknown>>(),
+    replaceSchedules: jest.fn<(doctorId: number, schedule: { shifts: object[] }) => Promise<unknown>>(),
+    findByDoctorId: jest.fn<(doctorId: number) => Promise<unknown>>(),
   };
 
   let service: DoctorsService;
