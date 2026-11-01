@@ -4,8 +4,8 @@ import { hash } from 'bcrypt';
 import { DoctorsService } from '../../src/doctors/doctors.service';
 
 jest.mock('bcrypt', () => ({
-  compare: jest.fn<(...args: any[]) => any>(),
-  hash: jest.fn<(...args: any[]) => any>(),
+  compare: jest.fn<(data: string, encrypted: string) => Promise<boolean>>(),
+  hash: jest.fn<(data: string, saltOrRounds: string | number) => Promise<string>>(),
 }));
 
 jest.mock(
@@ -52,18 +52,18 @@ jest.mock('../../src/doctors/doctors-schedules.repository', () => ({
 
 describe(DoctorsService.name, () => {
   const doctorsRepository = {
-    createWithUser: jest.fn<(...args: any[]) => any>(),
-    find: jest.fn<(...args: any[]) => any>(),
-    findOne: jest.fn<(...args: any[]) => any>(),
-    findCalendar: jest.fn<(...args: any[]) => any>(),
+    createWithUser: jest.fn<() => Promise<unknown>>(),
+    find: jest.fn<() => Promise<unknown>>(),
+    findOne: jest.fn<() => Promise<unknown>>(),
+    findCalendar: jest.fn<() => Promise<unknown>>(),
   };
   const roleRepository = {
-    findOne: jest.fn<(...args: any[]) => any>(),
-    findByNames: jest.fn<(...args: any[]) => any>(),
+    findOne: jest.fn<() => Promise<unknown>>(),
+    findByNames: jest.fn<() => Promise<unknown>>(),
   };
   const doctorSchedulesRepository = {
-    replaceSchedules: jest.fn<(...args: any[]) => any>(),
-    findByDoctorId: jest.fn<(...args: any[]) => any>(),
+    replaceSchedules: jest.fn<() => Promise<unknown>>(),
+    findByDoctorId: jest.fn<() => Promise<unknown>>(),
   };
 
   let service: DoctorsService;
