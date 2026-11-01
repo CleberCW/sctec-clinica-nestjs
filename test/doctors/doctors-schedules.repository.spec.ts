@@ -15,17 +15,17 @@ jest.mock(
 
 describe(DoctorSchedulesTypeORMRepository.name, () => {
   const scheduleRepository = {
-    delete: jest.fn(),
-    create: jest.fn(),
-    save: jest.fn(),
-    find: jest.fn(),
+    delete: jest.fn<(...args: any[]) => any>(),
+    create: jest.fn<(...args: any[]) => any>(),
+    save: jest.fn<(...args: any[]) => any>(),
+    find: jest.fn<(...args: any[]) => any>(),
   };
   const manager = {
-    getRepository: jest.fn(),
+    getRepository: jest.fn<(...args: any[]) => any>(),
   };
   const dataSource = {
-    transaction: jest.fn(),
-    getRepository: jest.fn(),
+    transaction: jest.fn<(...args: any[]) => any>(),
+    getRepository: jest.fn<(...args: any[]) => any>(),
   };
 
   let repository: DoctorSchedulesTypeORMRepository;
