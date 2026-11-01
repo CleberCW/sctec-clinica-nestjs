@@ -13,19 +13,40 @@ jest.mock(
   { virtual: true },
 );
 
+type ScheduleRepositoryStub = {
+  delete: jest.Mock<(criteria: { doctorId: number }) => Promise<unknown>>;
+  create: jest.Mock<(value: object) => object>;
+  save: jest.Mock<(entities: unknown[]) => Promise<unknown>>;
+  find: jest.Mock<
+    (options: { where: { doctorId: number } }) => Promise<unknown>
+  >;
+};
+
+type TransactionManagerStub = {
+  getRepository: () => ScheduleRepositoryStub;
+};
+
+type TransactionCallback = (
+  manager: TransactionManagerStub,
+) => Promise<unknown>;
+
 describe(DoctorSchedulesTypeORMRepository.name, () => {
-  const scheduleRepository = {
-    delete: jest.fn<(...args: any[]) => any>(),
-    create: jest.fn<(...args: any[]) => any>(),
-    save: jest.fn<(...args: any[]) => any>(),
-    find: jest.fn<(...args: any[]) => any>(),
+  const scheduleRepository: ScheduleRepositoryStub = {
+    delete: jest.fn<(criteria: { doctorId: number }) => Promise<unknown>>(),
+    create: jest.fn<(value: object) => object>(),
+    save: jest.fn<(entities: unknown[]) => Promise<unknown>>(),
+    find: jest.fn<
+      (options: { where: { doctorId: number } }) => Promise<unknown>
+    >(),
   };
   const manager = {
-    getRepository: jest.fn<(...args: any[]) => any>(),
+    getRepository: jest.fn<() => ScheduleRepositoryStub>(),
   };
   const dataSource = {
-    transaction: jest.fn<(...args: any[]) => any>(),
-    getRepository: jest.fn<(...args: any[]) => any>(),
+    transaction: jest.fn<
+      (callback: TransactionCallback) => Promise<unknown>
+    >(),
+    getRepository: jest.fn<() => ScheduleRepositoryStub>(),
   };
 
   let repository: DoctorSchedulesTypeORMRepository;
@@ -34,9 +55,7 @@ describe(DoctorSchedulesTypeORMRepository.name, () => {
     jest.clearAllMocks();
     repository = new DoctorSchedulesTypeORMRepository(dataSource as never);
     manager.getRepository.mockReturnValue(scheduleRepository);
-    dataSource.transaction.mockImplementation(async (callback) =>
-      callback(manager),
-    );
+    dataSource.transaction.mockImplementation((callback) => callback(manager));
     dataSource.getRepository.mockReturnValue(scheduleRepository);
     scheduleRepository.create.mockImplementation((value) => value);
   });
