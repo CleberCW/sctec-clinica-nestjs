@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { Appointment } from '../../src/@common/entities/appointment.entity';
 import { AppointmentsService } from '../../src/appointments/appointments.service';
 
 jest.mock(
@@ -56,18 +57,35 @@ jest.mock('../../src/appointments/appointments.repository', () => ({
 
 describe(AppointmentsService.name, () => {
   const appointmentsRepository = {
-    create: jest.fn<(...args: any[]) => any>(),
-    findById: jest.fn<(...args: any[]) => any>(),
-    hasPatientConflict: jest.fn<(...args: any[]) => any>(),
-    hasConflict: jest.fn<(...args: any[]) => any>(),
-    find: jest.fn<(...args: any[]) => any>(),
-    update: jest.fn<(...args: any[]) => any>(),
+    create: jest.fn<(value: Partial<Appointment>) => Promise<unknown>>(),
+    findById: jest.fn<(id: number) => Promise<unknown>>(),
+    hasPatientConflict: jest.fn<
+      (patientId: number, startsAt: Date, endsAt: Date) => Promise<boolean>
+    >(),
+    hasConflict: jest.fn<
+      (
+        doctorId: number,
+        patientId: number,
+        startsAt: Date,
+        endsAt: Date,
+      ) => Promise<boolean>
+    >(),
+    find: jest.fn<(filters: unknown) => Promise<unknown>>(),
+    update: jest.fn<
+      (id: number, appointment: Partial<Appointment>) => Promise<unknown>
+    >(),
   };
   const doctorsService = {
-    getOne: jest.fn<(...args: any[]) => any>(),
+    getOne: jest.fn<
+      (options: {
+        id?: number;
+        schedules?: boolean;
+        userId?: number;
+      }) => Promise<unknown>
+    >(),
   };
   const patientsService = {
-    getOne: jest.fn<(...args: any[]) => any>(),
+    getOne: jest.fn<(id: number) => Promise<unknown>>(),
   };
 
   let service: AppointmentsService;
@@ -108,6 +126,10 @@ describe(AppointmentsService.name, () => {
     notes: 'Consulta de rotina',
   };
 
+  const appointmentFixture = (
+    values: Partial<Appointment>,
+  ): Appointment => values as Appointment;
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -122,10 +144,14 @@ describe(AppointmentsService.name, () => {
     patientsService.getOne.mockResolvedValue(patient);
     doctorsService.getOne.mockResolvedValue(doctor);
     appointmentsRepository.hasPatientConflict.mockResolvedValue(false);
-    appointmentsRepository.create.mockImplementation(async (value) => ({
-      id: 41,
-      ...value,
-    }));
+    appointmentsRepository.create.mockImplementation((value) =>
+      Promise.resolve(
+        appointmentFixture({
+          id: 41,
+          ...value,
+        }),
+      ),
+    );
   });
 
   afterEach(() => {
@@ -459,12 +485,12 @@ describe(AppointmentsService.name, () => {
   });
 
   it('retorna agendamento existente para usuário autenticado', async () => {
-    const appointment = {
+    const appointment = appointmentFixture({
       id: 41,
       doctorId: 30,
       patientId: 10,
       status: 'scheduled',
-    };
+    });
     appointmentsRepository.findById.mockResolvedValue(appointment);
 
     await expect(
@@ -486,11 +512,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('impede médico de consultar agenda de outro médico', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 99,
-      status: 'scheduled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 99,
+        status: 'scheduled',
+      }),
+    );
 
     await expect(
       service.getById(41, doctorUser as never),
@@ -503,7 +531,11 @@ describe(AppointmentsService.name, () => {
   });
 
   it('permite admin consultar agendamento de outro médico', async () => {
-    const appointment = { id: 41, doctorId: 99, status: 'scheduled' };
+    const appointment = appointmentFixture({
+      id: 41,
+      doctorId: 99,
+      status: 'scheduled',
+    });
     appointmentsRepository.findById.mockResolvedValue(appointment);
 
     await expect(
@@ -512,16 +544,20 @@ describe(AppointmentsService.name, () => {
   });
 
   it('médico responsável inicia consulta agendada', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'scheduled',
-    });
-    appointmentsRepository.update.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'in_progress',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'scheduled',
+      }),
+    );
+    appointmentsRepository.update.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'in_progress',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'in_progress' }, doctorUser as never),
@@ -533,15 +569,19 @@ describe(AppointmentsService.name, () => {
   });
 
   it('admin pode iniciar uma consulta agendada', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 99,
-      status: 'scheduled',
-    });
-    appointmentsRepository.update.mockResolvedValue({
-      id: 41,
-      status: 'in_progress',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 99,
+        status: 'scheduled',
+      }),
+    );
+    appointmentsRepository.update.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        status: 'in_progress',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'in_progress' }, admin as never),
@@ -549,15 +589,19 @@ describe(AppointmentsService.name, () => {
   });
 
   it('secretaria pode cancelar consulta agendada', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 99,
-      status: 'scheduled',
-    });
-    appointmentsRepository.update.mockResolvedValue({
-      id: 41,
-      status: 'cancelled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 99,
+        status: 'scheduled',
+      }),
+    );
+    appointmentsRepository.update.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        status: 'cancelled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'cancelled' }, secretary as never),
@@ -565,11 +609,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('secretaria não pode cancelar consulta em andamento', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 99,
-      status: 'in_progress',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 99,
+        status: 'in_progress',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'cancelled' }, secretary as never),
@@ -582,16 +628,20 @@ describe(AppointmentsService.name, () => {
   });
 
   it('médico responsável pode concluir consulta em andamento', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'in_progress',
-    });
-    appointmentsRepository.update.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'done',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'in_progress',
+      }),
+    );
+    appointmentsRepository.update.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'done',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'done' }, doctorUser as never),
@@ -599,15 +649,19 @@ describe(AppointmentsService.name, () => {
   });
 
   it('admin pode cancelar consulta em andamento', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 99,
-      status: 'in_progress',
-    });
-    appointmentsRepository.update.mockResolvedValue({
-      id: 41,
-      status: 'cancelled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 99,
+        status: 'in_progress',
+      }),
+    );
+    appointmentsRepository.update.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        status: 'cancelled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'cancelled' }, admin as never),
@@ -615,16 +669,20 @@ describe(AppointmentsService.name, () => {
   });
 
   it('médico responsável pode cancelar consulta em andamento', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'in_progress',
-    });
-    appointmentsRepository.update.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'cancelled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'in_progress',
+      }),
+    );
+    appointmentsRepository.update.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'cancelled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'cancelled' }, doctorUser as never),
@@ -632,11 +690,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('recusa início de consulta por secretaria', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'scheduled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'scheduled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'in_progress' }, secretary as never),
@@ -649,11 +709,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('recusa transição inválida de scheduled diretamente para done', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'scheduled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'scheduled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'done' }, doctorUser as never),
@@ -666,11 +728,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('não permite alterar consulta concluída', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'done',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'done',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'cancelled' }, admin as never),
@@ -683,11 +747,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('não permite alterar consulta cancelada', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'cancelled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'cancelled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'scheduled' }, admin as never),
@@ -700,11 +766,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('rejeita status fora do enum como dados inválidos', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'scheduled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'scheduled',
+      }),
+    );
 
     await expect(
       service.update(41, { status: 'finished' as never }, admin as never),
@@ -717,11 +785,13 @@ describe(AppointmentsService.name, () => {
   });
 
   it('rejeita atualização sem novo status', async () => {
-    appointmentsRepository.findById.mockResolvedValue({
-      id: 41,
-      doctorId: 30,
-      status: 'scheduled',
-    });
+    appointmentsRepository.findById.mockResolvedValue(
+      appointmentFixture({
+        id: 41,
+        doctorId: 30,
+        status: 'scheduled',
+      }),
+    );
 
     await expect(
       service.update(41, {} as never, admin as never),
