@@ -4,8 +4,8 @@ import { hash } from 'bcrypt';
 import { UserService } from '../../src/users/user.service';
 
 jest.mock('bcrypt', () => ({
-  compare: jest.fn<(...args: any[]) => any>(),
-  hash: jest.fn<(...args: any[]) => any>(),
+  compare: jest.fn<(data: string, encrypted: string) => Promise<boolean>>(),
+  hash: jest.fn<(data: string, saltOrRounds: string | number) => Promise<string>>(),
 }));
 
 jest.mock('../../src/users/user.repository', () => ({
@@ -19,12 +19,12 @@ jest.mock('../../src/roles/role.repository', () => ({
 
 describe(UserService.name, () => {
   const userRepository = {
-    createAndSaveUser: jest.fn<(...args: any[]) => any>(),
-    getUserByEmail: jest.fn<(...args: any[]) => any>(),
+    createAndSaveUser: jest.fn<() => Promise<unknown>>(),
+    getUserByEmail: jest.fn<() => Promise<unknown>>(),
   };
   const roleRepository = {
-    findByNames: jest.fn<(...args: any[]) => any>(),
-    findOne: jest.fn<(...args: any[]) => any>(),
+    findByNames: jest.fn<() => Promise<unknown>>(),
+    findOne: jest.fn<() => Promise<unknown>>(),
   };
 
   let service: UserService;
