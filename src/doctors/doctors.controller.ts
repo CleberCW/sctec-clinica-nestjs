@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  Put,
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -39,7 +40,6 @@ export class DoctorsController {
 
   @Get()
   @UseGuards(JwtGuard)
-  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
   async getAll(@Query() query: GetDoctorsDto) {
     const doctors = await this.doctorsService.getAll(query);
 
@@ -50,7 +50,6 @@ export class DoctorsController {
 
   @Get('/:id')
   @UseGuards(JwtGuard)
-  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
   async getOne(@Param('id', ParseIntPipe) id: number) {
     const patient = await this.doctorsService.getOne({ id: id });
 
@@ -65,12 +64,12 @@ export class DoctorsController {
     return this.doctorsService.getSchedule(id);
   }
 
-  @Post('/:id/work-schedule')
+  @Put('/:doctorId/work-schedule')
   @UseGuards(JwtGuard)
   @RequireRole([ROLES.ADMIN])
   @HttpCode(HttpStatus.OK)
   postSchedule(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('doctorId', ParseIntPipe) id: number,
     @Body() schedule: CreateDoctorSchedulesDto,
   ) {
     return this.doctorsService.postSchedule(id, schedule);
