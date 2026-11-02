@@ -82,9 +82,22 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/appointments/appointments.service.ts",
+      "src/auth/auth.service.ts",
+      "src/doctors/doctors.service.ts",
+      "src/patients/medical-records.service.ts",
+      "src/patients/patients.service.ts",
+      "src/users/user.service.ts"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
   }
 }
