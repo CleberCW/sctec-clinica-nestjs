@@ -46,7 +46,6 @@ export class PatientsController {
 
   @Get()
   @UseGuards(JwtGuard)
-  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
   async getAll(@Query() query: GetPatientsDto) {
     const patients = await this.patientsService.getAll(query);
 
@@ -57,7 +56,6 @@ export class PatientsController {
 
   @Get('/:id')
   @UseGuards(JwtGuard)
-  @RequireRole([ROLES.ADMIN, ROLES.SECRETARY])
   async getOne(@Param('id') id: number) {
     const patient = await this.patientsService.getOne(id);
 
