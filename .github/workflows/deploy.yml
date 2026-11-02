@@ -36,3 +36,18 @@ jobs:
           tags: |
             ghcr.io/clebercw/sctec-clinica-nestjs:${{ github.sha }}
             ghcr.io/clebercw/sctec-clinica-nestjs:latest
+
+      - name: Trigger Render deployment
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        shell: bash
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "GitHub secret RENDER_DEPLOY_HOOK_URL is not configured." >&2
+            exit 1
+          fi
+
+          image="ghcr.io/clebercw/sctec-clinica-nestjs:${GITHUB_SHA}"
+          curl --fail --silent --show-error --get \
+            --data-urlencode "imgURL=${image}" \
+            "$RENDER_DEPLOY_HOOK_URL"
