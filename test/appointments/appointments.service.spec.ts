@@ -494,7 +494,7 @@ describe(AppointmentsService.name, () => {
   it('retorna agendamento existente para usuário autenticado', async () => {
     const appointment = appointmentFixture({
       id: 41,
-      doctorId: 30,
+      doctorId: 3,
       patientId: 10,
       status: 'scheduled',
     });
@@ -552,14 +552,14 @@ describe(AppointmentsService.name, () => {
     appointmentsRepository.findById.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'scheduled',
       }),
     );
     appointmentsRepository.update.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'in_progress',
       }),
     );
@@ -636,14 +636,14 @@ describe(AppointmentsService.name, () => {
     appointmentsRepository.findById.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'in_progress',
       }),
     );
     appointmentsRepository.update.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'done',
       }),
     );
@@ -677,14 +677,14 @@ describe(AppointmentsService.name, () => {
     appointmentsRepository.findById.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'in_progress',
       }),
     );
     appointmentsRepository.update.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'cancelled',
       }),
     );
@@ -717,7 +717,7 @@ describe(AppointmentsService.name, () => {
     appointmentsRepository.findById.mockResolvedValue(
       appointmentFixture({
         id: 41,
-        doctorId: 30,
+        doctorId: 3,
         status: 'scheduled',
       }),
     );

@@ -114,21 +114,21 @@ export class DoctorsService {
         );
       }
 
-      if (index + 1 >= workSchedule.shifts.length) {
+      if (index + 1 >= shifts.length) {
         return;
       }
 
-      if (shift.weekDay !== workSchedule.shifts[index + 1].weekDay) {
+      if (shift.weekDay !== shifts[index + 1].weekDay) {
         return;
       }
       const nextStartTimeMinutes = toAbsoluteDayMinutes(
-        workSchedule.shifts[index + 1].startTime,
+        shifts[index + 1].startTime,
       );
 
       if (endTimeMinutes > nextStartTimeMinutes) {
         throw new DomainError(
-          'PRÓXIMO TURNO COMEÇA ANTES DO ATUAL TERMINAR',
-          ERROR_CODE.HORARIO_FORA_DA_ESCALA,
+          'Próximo turno começa antes do atual terminar, causando sobreposição de horários.',
+          ERROR_CODE.DADOS_INVALIDOS,
         );
       }
     });
