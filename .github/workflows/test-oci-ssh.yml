@@ -35,20 +35,42 @@ jobs:
           printf '%s\n' "$OCI_VM_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-      - name: Check host key entry
+      - name: Diagnose host key
+        shell: bash
         env:
           OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
         run: |
           set -euo pipefail
 
-          echo "Checking known_hosts..."
+          KNOWN_HOSTS="$HOME/.ssh/known_hosts"
+          EXPECTED_HOST="163.176.159.8"
 
-          if ssh-keygen -F "$OCI_VM_HOST" -f ~/.ssh/known_hosts; then
-            echo "Host key entry found."
+          echo "1. Checking configured host..."
+          printf 'OCI_VM_HOST: <%s>\n' "$OCI_VM_HOST"
+
+          echo
+          echo "2. Checking known_hosts entries..."
+          awk 'NF >= 3 {
+            print "Host: " $1
+            print "Key type: " $2
+          }' "$KNOWN_HOSTS"
+
+          echo
+          echo "3. Checking expected IP..."
+
+          if ssh-keygen -F "$EXPECTED_HOST" -f "$KNOWN_HOSTS"; then
+            echo "SUCCESS: Expected IP found."
           else
-            echo "Host key entry NOT found."
-            echo "Available fingerprints:"
-            ssh-keygen -lf ~/.ssh/known_hosts || true
+            echo "ERROR: Expected IP NOT found."
+          fi
+
+          echo
+          echo "4. Checking configured host..."
+
+          if ssh-keygen -F "$OCI_VM_HOST" -f "$KNOWN_HOSTS"; then
+            echo "SUCCESS: Configured host found."
+          else
+            echo "ERROR: Configured host NOT found."
             exit 1
           fi
 
