@@ -1,0 +1,70 @@
+name: OCI SSH Diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-ssh:
+    name: Test SSH connection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        shell: bash
+        env:
+          OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
+          OCI_VM_USER: ${{ secrets.OCI_VM_USER }}
+          OCI_VM_SSH_PRIVATE_KEY: ${{ secrets.OCI_VM_SSH_PRIVATE_KEY }}
+          OCI_VM_KNOWN_HOSTS: ${{ secrets.OCI_VM_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+
+          : "${OCI_VM_HOST:?Missing OCI_VM_HOST}"
+          : "${OCI_VM_USER:?Missing OCI_VM_USER}"
+          : "${OCI_VM_SSH_PRIVATE_KEY:?Missing OCI_VM_SSH_PRIVATE_KEY}"
+          : "${OCI_VM_KNOWN_HOSTS:?Missing OCI_VM_KNOWN_HOSTS}"
+
+          install -m 700 -d ~/.ssh
+
+          printf '%s\n' "$OCI_VM_SSH_PRIVATE_KEY" > ~/.ssh/oci_vm_key
+          chmod 600 ~/.ssh/oci_vm_key
+
+          printf '%s\n' "$OCI_VM_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Check host key entry
+        env:
+          OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking known_hosts..."
+
+          if ssh-keygen -F "$OCI_VM_HOST" -f ~/.ssh/known_hosts; then
+            echo "Host key entry found."
+          else
+            echo "Host key entry NOT found."
+            echo "Available fingerprints:"
+            ssh-keygen -lf ~/.ssh/known_hosts || true
+            exit 1
+          fi
+
+      - name: Test SSH authentication
+        env:
+          OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
+          OCI_VM_USER: ${{ secrets.OCI_VM_USER }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/oci_vm_key \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=10 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile=~/.ssh/known_hosts \
+            "$OCI_VM_USER@$OCI_VM_HOST" \
+            'echo "SSH authentication successful"; hostname'

@@ -1,0 +1,152 @@
+name: Test OCI Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Tag da imagem já publicada no GHCR (SHA ou latest)'
+        required: true
+        type: string
+        default: latest
+
+permissions:
+  contents: read
+
+jobs:
+  test-deploy:
+    name: Test deployment on Oracle Cloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        shell: bash
+        env:
+          OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
+          OCI_VM_USER: ${{ secrets.OCI_VM_USER }}
+          OCI_VM_SSH_PRIVATE_KEY: ${{ secrets.OCI_VM_SSH_PRIVATE_KEY }}
+          OCI_VM_KNOWN_HOSTS: ${{ secrets.OCI_VM_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+
+          : "${OCI_VM_HOST:?Missing OCI_VM_HOST}"
+          : "${OCI_VM_USER:?Missing OCI_VM_USER}"
+          : "${OCI_VM_SSH_PRIVATE_KEY:?Missing OCI_VM_SSH_PRIVATE_KEY}"
+          : "${OCI_VM_KNOWN_HOSTS:?Missing OCI_VM_KNOWN_HOSTS}"
+
+          install -m 700 -d ~/.ssh
+
+          printf '%s\n' "$OCI_VM_SSH_PRIVATE_KEY" > ~/.ssh/oci_vm_key
+          chmod 600 ~/.ssh/oci_vm_key
+
+          printf '%s\n' "$OCI_VM_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Validate SSH host key
+        env:
+          OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking host key..."
+
+          ssh-keygen -F "$OCI_VM_HOST" -f ~/.ssh/known_hosts
+
+          echo "Host key successfully validated."
+
+      - name: Test deployment on Oracle VM
+        env:
+          OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
+          OCI_VM_USER: ${{ secrets.OCI_VM_USER }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$IMAGE_TAG" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+            echo "Invalid image tag."
+            exit 1
+          fi
+
+          IMAGE="ghcr.io/clebercw/sctec-clinica-nestjs:$IMAGE_TAG"
+
+          ssh \
+            -i ~/.ssh/oci_vm_key \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=10 \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile=~/.ssh/known_hosts \
+            "$OCI_VM_USER@$OCI_VM_HOST" \
+            "bash -s -- '$IMAGE'" <<'REMOTE'
+
+          set -Eeuo pipefail
+
+          IMAGE="$1"
+          CONTAINER_NAME="sctec-clinica-api-test"
+          APP_DIR="$HOME/sctec-clinica"
+          ENV_FILE="$APP_DIR/.env"
+          TEST_PORT=3001
+
+          cleanup() {
+            docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+          }
+
+          trap cleanup EXIT
+
+          echo "Checking Docker..."
+
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "Docker is not installed or unavailable."
+            exit 1
+          fi
+
+          docker info >/dev/null
+
+          echo "Checking environment file..."
+
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "Missing environment file: $ENV_FILE"
+            exit 1
+          fi
+
+          echo "Pulling image: $IMAGE"
+
+          docker pull "$IMAGE"
+
+          echo "Removing previous test container, if any..."
+
+          cleanup
+
+          echo "Starting temporary container..."
+
+          docker run -d \
+            --name "$CONTAINER_NAME" \
+            --env-file "$ENV_FILE" \
+            -p "127.0.0.1:${TEST_PORT}:3000" \
+            "$IMAGE"
+
+          echo "Waiting for application health endpoint..."
+
+          HEALTH_URL="http://127.0.0.1:${TEST_PORT}/api/v1/health"
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$HEALTH_URL"; then
+              echo ""
+              echo "SUCCESS: Application is responding."
+              exit 0
+            fi
+
+            if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME")" != "true" ]; then
+              echo "Container stopped unexpectedly."
+              docker logs "$CONTAINER_NAME" || true
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          echo "Health check timed out."
+          docker logs "$CONTAINER_NAME" || true
+          exit 1
+
+          REMOTE
