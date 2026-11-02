@@ -59,6 +59,17 @@ jobs:
           printf '%s\n' "$OCI_VM_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
+          echo "Checking SSH host key..."
+
+          if ssh-keygen -F "$OCI_VM_HOST" -f ~/.ssh/known_hosts >/dev/null; then
+            echo "SUCCESS: Host entry found in known_hosts"
+          else
+            echo "ERROR: No matching host entry for OCI_VM_HOST"
+            exit 1
+          fi
+
+          ssh-keygen -lf ~/.ssh/known_hosts
+
       - name: Deploy container on Oracle Cloud VM
         env:
           OCI_VM_HOST: ${{ secrets.OCI_VM_HOST }}
