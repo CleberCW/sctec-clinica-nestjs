@@ -202,7 +202,6 @@ http://localhost:3000/api/v1/health
 |---|---|
 | `npm run build` | Compila a aplicação TypeScript. |
 | `npm run start:dev` | Inicia em modo de desenvolvimento. |
-| `npm run start:prod` | Inicia o código compilado. |
 | `npm run migration:run` | Executa migrations pendentes via DataSource. |
 | `npm run migration:revert` | Reverte a última migration aplicada. |
 | `npm test` | Executa os testes Jest. |
@@ -309,4 +308,4 @@ O board deve ser mantido público no GitHub Projects ou Trello e vinculado aos p
 
 ## Observações sobre a infraestrutura em relação à especificação
 
-A implantação atualmente funcional utiliza VMs na Oracle Cloud: PostgreSQL autogerenciado em Docker Compose numa VM dedicada e API NestJS em outra VM. A especificação do módulo descreve PostgreSQL gerenciado com SSL e cita Render ou Google Cloud Run como destinos de publicação. Portanto, a arquitetura OCI atual é uma decisão de implantação diferente da plataforma indicada no documento, e a conexão PostgreSQL atual ainda deve ser avaliada quanto ao requisito de SSL. Esta seção registra a configuração real, sem declarar conformidade que ainda não foi implementada.
+A implantação atualmente funcional utiliza VMs na Oracle Cloud: PostgreSQL autogerenciado em Docker Compose numa VM dedicada e API NestJS em outra VM. A especificação do módulo descreve PostgreSQL gerenciado com SSL e cita Render ou Google Cloud Run como destinos de publicação. Portanto, a arquitetura OCI atual é uma decisão de implantação diferente da plataforma indicada no documento, e a conexão PostgreSQL atual ainda deve ser avaliada quanto ao requisito de SSL. O DataSource atual não configura SSL para a conexão PostgreSQL; portanto, o requisito RP08 ainda não está atendido integralmente. Esta seção registra a configuração real, sem declarar conformidade que ainda não foi implementada.
