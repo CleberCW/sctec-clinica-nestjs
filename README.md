@@ -131,6 +131,20 @@ npm run test:e2e
 npm run test:cov
 ```
 
+### Escopo e limite de cobertura
+
+A cobertura do Jest considera somente os serviços que concentram as regras de negócio:
+
+- `src/appointments/appointments.service.ts`
+- `src/auth/auth.service.ts`
+- `src/doctors/doctors.service.ts`
+- `src/patients/medical-records.service.ts`
+- `src/patients/patients.service.ts`
+- `src/users/user.service.ts`
+
+O `package.json` configura um limite mínimo global de 80% para linhas (`lines`), ramificações (`branches`), funções (`functions`) e instruções (`statements`). O `JwtService` fica fora desse recorte por tratar de infraestrutura criptográfica de tokens, e não das regras de negócio avaliadas.
+
+
 ## Comandos úteis
 
 ```bash
