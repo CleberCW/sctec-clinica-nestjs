@@ -4,11 +4,11 @@ API REST para apoiar a operação de uma clínica, cobrindo cadastro de paciente
 
 ## Publicação
 
-- **API:** http://163.176.159.88:3000
-- **Health check:** http://163.176.159.88:3000/api/v1/health
+- **API:** https://clinica-sctec.duckdns.org
+- **Health check:** https://clinica-sctec.duckdns.org/api/v1/health
 - **Prefixo das rotas:** `/api/v1`
 - **Repositório:** https://github.com/CleberCW/sctec-clinica-nestjs
-- **Board do projeto:** TODO — adicionar o link público do GitHub Projects ou Trello.
+- **Board do projeto:** https://github.com/users/CleberCW/projects/1
 
 O health check retorna `{ "status": "ok" }` quando a aplicação está disponível.
 
@@ -274,16 +274,31 @@ A tabela abaixo resume o contrato definido para a avaliação:
 | POST | `/patients/{patientId}/medical-records` | `doctor` com vínculo |
 | GET | `/patients/{patientId}/medical-records` | `doctor` com vínculo ou `admin` |
 
-### Divergências de rota/perfil a revisar
+### Divergências de rota/perfil em relação ao contrato
 
-Na revisão dos controllers atuais, foram identificadas diferenças em relação ao contrato acima:
+Na revisão dos controllers da aplicação, foram identificadas as seguintes diferenças:
 
-- O controller de usuários expõe `POST /users/register` com autenticação JWT; o contrato pede `POST /users` restrito ao perfil `admin`.
-- A listagem e consulta individual de pacientes estão restritas a `admin` e `secretary` no controller atual; o contrato permite qualquer usuário autenticado.
-- A listagem e consulta individual de médicos estão restritas a `admin` e `secretary` no controller atual; o contrato permite qualquer usuário autenticado.
-- O cadastro da escala está implementado como `POST /doctors/{id}/work-schedule`; o contrato especifica `PUT`.
+1. **Criação de usuários**
+   - Implementado: `POST /api/v1/users/register`, exigindo JWT.
+   - Contrato: `POST /api/v1/users`, permitido somente ao perfil `admin`.
+   - Impacto: método, caminho e autorização não correspondem ao contrato. O contrato também exige que não exista rota pública capaz de conceder o perfil `admin`.
 
-Esses pontos devem ser alinhados antes da avaliação automatizada, que verifica método, rota e autorização literalmente.
+2. **Listagem e consulta de pacientes**
+   - Implementado: `GET /api/v1/patients` e `GET /api/v1/patients/{id}` exigem `admin` ou `secretary`.
+   - Contrato: ambas as rotas devem aceitar qualquer usuário autenticado, incluindo `doctor`.
+   - Impacto: um médico autenticado recebe acesso negado onde o contrato espera acesso permitido.
+
+3. **Listagem e consulta de médicos**
+   - Implementado: `GET /api/v1/doctors` e `GET /api/v1/doctors/{id}` exigem `admin` ou `secretary`.
+   - Contrato: ambas as rotas devem aceitar qualquer usuário autenticado.
+   - Impacto: um médico autenticado recebe acesso negado onde o contrato espera acesso permitido.
+
+4. **Cadastro da escala de trabalho**
+   - Implementado: `POST /api/v1/doctors/{id}/work-schedule`.
+   - Contrato: `PUT /api/v1/doctors/{doctorId}/work-schedule`, permitido somente ao perfil `admin`.
+   - Impacto: o método HTTP é diferente. Além disso, o contrato define `PUT` porque o envio substitui a escala inteira.
+
+Essas diferenças foram identificadas comparando os controllers atuais com a seção 4.9 da especificação. Os demais endpoints da tabela devem continuar sendo verificados quanto a payloads, status HTTP, filtros, regras de posse e códigos de erro: a avaliação automatizada confere o contrato completo, não apenas a existência das rotas.
 
 ## Testes e cobertura
 
@@ -304,8 +319,4 @@ Os testes unitários usam dublês das dependências/repositórios, sem exigir ba
 
 O fluxo de desenvolvimento utiliza branches por funcionalidade ou correção, commits semânticos e pull requests para `main`. O workflow de validação executa build e testes com cobertura antes do merge; a publicação é disparada pelo push resultante na branch `main`.
 
-O board deve ser mantido público no GitHub Projects ou Trello e vinculado aos pull requests correspondentes. **Link pendente:** adicionar aqui a URL pública do board.
-
-## Observações sobre a infraestrutura em relação à especificação
-
-A implantação atualmente funcional utiliza VMs na Oracle Cloud: PostgreSQL autogerenciado em Docker Compose numa VM dedicada e API NestJS em outra VM. A especificação do módulo descreve PostgreSQL gerenciado com SSL e cita Render ou Google Cloud Run como destinos de publicação. Portanto, a arquitetura OCI atual é uma decisão de implantação diferente da plataforma indicada no documento, e a conexão PostgreSQL atual ainda deve ser avaliada quanto ao requisito de SSL. O DataSource atual não configura SSL para a conexão PostgreSQL; portanto, o requisito RP08 ainda não está atendido integralmente. Esta seção registra a configuração real, sem declarar conformidade que ainda não foi implementada.
+O board público do projeto está disponível em [GitHub Projects](https://github.com/users/CleberCW/projects/1), com o acompanhamento das tarefas e do fluxo de desenvolvimento.
