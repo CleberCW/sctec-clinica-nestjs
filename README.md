@@ -1,14 +1,14 @@
-# MedClinic API — Etapa 2
+# Clinica API
 
 API REST para apoiar a operação de uma clínica, cobrindo cadastro de pacientes e médicos, escalas de trabalho, agendamentos e prontuários. O projeto foi desenvolvido em TypeScript com NestJS, TypeORM e PostgreSQL.
 
 ## Publicação
 
-- **API:** http://163.176.159.88:3000
-- **Health check:** http://163.176.159.88:3000/api/v1/health
+- **API:** https://clinica-sctec.duckdns.org
+- **Health check:** https://clinica-sctec.duckdns.org/api/v1/health
 - **Prefixo das rotas:** `/api/v1`
 - **Repositório:** https://github.com/CleberCW/sctec-clinica-nestjs
-- **Board do projeto:** TODO — adicionar o link público do GitHub Projects ou Trello.
+- **Board do projeto:** https://github.com/users/CleberCW/projects/1
 
 O health check retorna `{ "status": "ok" }` quando a aplicação está disponível.
 
@@ -224,7 +224,7 @@ A implantação atual utiliza duas VMs na mesma VCN:
 
 | Componente | Endereço privado | Responsabilidade |
 |---|---|---|
-| VM da API | `10.0.0.135` | Container NestJS e publicação HTTP na porta `3000`. |
+| VM da API | `10.0.0.135` | Container NestJS, atendendo internamente na porta `3000` e publicado externamente pelo domínio HTTPS. |
 | VM do PostgreSQL | `10.0.0.23` | PostgreSQL 18.6 em Docker Compose, porta privada `5432`. |
 
 A API conecta-se ao banco pelo endereço privado `10.0.0.23:5432`. A regra de entrada do banco permite a porta 5432 somente a partir de `10.0.0.135/32`; a porta do PostgreSQL não é destinada ao acesso público.
@@ -274,16 +274,15 @@ A tabela abaixo resume o contrato definido para a avaliação:
 | POST | `/patients/{patientId}/medical-records` | `doctor` com vínculo |
 | GET | `/patients/{patientId}/medical-records` | `doctor` com vínculo ou `admin` |
 
-### Divergências de rota/perfil a revisar
+### Rotas e controle de acesso
 
-Na revisão dos controllers atuais, foram identificadas diferenças em relação ao contrato acima:
+Os controllers seguem as rotas e permissões descritas na tabela do contrato:
 
-- O controller de usuários expõe `POST /users/register` com autenticação JWT; o contrato pede `POST /users` restrito ao perfil `admin`.
-- A listagem e consulta individual de pacientes estão restritas a `admin` e `secretary` no controller atual; o contrato permite qualquer usuário autenticado.
-- A listagem e consulta individual de médicos estão restritas a `admin` e `secretary` no controller atual; o contrato permite qualquer usuário autenticado.
-- O cadastro da escala está implementado como `POST /doctors/{id}/work-schedule`; o contrato especifica `PUT`.
-
-Esses pontos devem ser alinhados antes da avaliação automatizada, que verifica método, rota e autorização literalmente.
+- A criação de usuários é feita por `POST /users` e exige autenticação com o perfil `admin`.
+- A listagem e consulta individual de pacientes e médicos exigem autenticação, sem restrição adicional de perfil.
+- A criação de pacientes exige `admin` ou `secretary`; a atualização exige os mesmos perfis; a remoção exige `admin`.
+- A criação de médicos e a substituição completa da escala de trabalho exigem `admin`. A rota de atualização da escala utiliza `PUT /doctors/{doctorId}/work-schedule`.
+- O acesso aos prontuários é condicionado ao perfil e, para médicos, ao vínculo com o paciente.
 
 ## Testes e cobertura
 
@@ -304,8 +303,4 @@ Os testes unitários usam dublês das dependências/repositórios, sem exigir ba
 
 O fluxo de desenvolvimento utiliza branches por funcionalidade ou correção, commits semânticos e pull requests para `main`. O workflow de validação executa build e testes com cobertura antes do merge; a publicação é disparada pelo push resultante na branch `main`.
 
-O board deve ser mantido público no GitHub Projects ou Trello e vinculado aos pull requests correspondentes. **Link pendente:** adicionar aqui a URL pública do board.
-
-## Observações sobre a infraestrutura em relação à especificação
-
-A implantação atualmente funcional utiliza VMs na Oracle Cloud: PostgreSQL autogerenciado em Docker Compose numa VM dedicada e API NestJS em outra VM. A especificação do módulo descreve PostgreSQL gerenciado com SSL e cita Render ou Google Cloud Run como destinos de publicação. Portanto, a arquitetura OCI atual é uma decisão de implantação diferente da plataforma indicada no documento, e a conexão PostgreSQL atual ainda deve ser avaliada quanto ao requisito de SSL. O DataSource atual não configura SSL para a conexão PostgreSQL; portanto, o requisito RP08 ainda não está atendido integralmente. Esta seção registra a configuração real, sem declarar conformidade que ainda não foi implementada.
+O board público do projeto está disponível em [GitHub Projects](https://github.com/users/CleberCW/projects/1), com o acompanhamento das tarefas e do fluxo de desenvolvimento.
