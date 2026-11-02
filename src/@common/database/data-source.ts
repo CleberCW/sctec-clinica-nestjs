@@ -9,6 +9,7 @@ import { Log } from '../entities/log.entity';
 import { MedicalRecordEntry } from '../entities/medicalRecord.entity';
 import { Patient } from '../entities/patient.entity';
 import { Appointment } from '../entities/appointment.entity';
+import { join } from 'node:path';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -29,7 +30,7 @@ const AppDataSource = new DataSource({
     Log,
   ],
 
-  migrations: ['sql/migrations/*.ts'],
+  migrations: [join(__dirname, 'migrations/*.ts')],
   synchronize: false,
 });
 

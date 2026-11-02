@@ -11,10 +11,10 @@ export class Migration1793317245456 implements MigrationInterface {
       `DROP INDEX "public"."IDX_e5643f83e97b3c0ca5a5148409"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "appointments" DROP CONSTRAINT "EXCL_APPOINTMENT_DOCTOR_OVERLAP"`,
+      `ALTER TABLE "appointments" DROP CONSTRAINT IF EXISTS "EXCL_APPOINTMENT_DOCTOR_OVERLAP"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "appointments" DROP CONSTRAINT "EXCL_APPOINTMENT_PATIENT_OVERLAP"`,
+      `ALTER TABLE "appointments" DROP CONSTRAINT IF EXISTS "EXCL_APPOINTMENT_PATIENT_OVERLAP"`,
     );
     await queryRunner.query(`ALTER TABLE "appointments" DROP COLUMN "startAt"`);
     await queryRunner.query(`ALTER TABLE "appointments" DROP COLUMN "endAt"`);
