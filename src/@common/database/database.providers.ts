@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
-
+import { join } from 'node:path';
 import { Role } from '../entities/role.entity';
 import { User } from '../entities/user.entity';
 import { Doctor } from '../entities/doctor.entity';
@@ -35,6 +35,9 @@ export const databaseProviders = [
           Log,
         ],
         synchronize: false,
+        migrations: [join(__dirname, 'migrations/*.js')],
+
+        migrationsRun: true,
       });
 
       return dataSource.initialize();
