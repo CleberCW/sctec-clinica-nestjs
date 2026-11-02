@@ -57,9 +57,9 @@ export class MedicalRecordsService {
 
     const filteredAppointments = patient.appointments.filter(
       (appt) =>
-        appt.status === APPOINTMENT_STATUSES.DONE ||
-        (appt.status === APPOINTMENT_STATUSES.IN_PROGRESS &&
-          appt.doctorId === doctor.id),
+        (appt.status === APPOINTMENT_STATUSES.DONE ||
+          appt.status === APPOINTMENT_STATUSES.IN_PROGRESS) &&
+        appt.doctorId === doctor.id,
     );
 
     if (filteredAppointments.length === 0) {
@@ -112,6 +112,12 @@ export class MedicalRecordsService {
       );
     }
 
+    if (isAdmin) {
+      return await this.medicalRecordsRepository.getMedicalRecordsByPatient(
+        patientId,
+      );
+    }
+
     if (isDoctor) {
       const doctor = await this.doctorService.getOne({
         userId: Number(user.sub),
@@ -144,8 +150,6 @@ export class MedicalRecordsService {
       );
     }
 
-    return await this.medicalRecordsRepository.getMedicalRecordsByPatient(
-      patientId,
-    );
+    throw new DomainError('Acesso negado', ERROR_CODE.ACESSO_NEGADO);
   }
 }

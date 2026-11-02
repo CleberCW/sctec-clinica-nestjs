@@ -404,6 +404,11 @@ describe(MedicalRecordsService.name, () => {
         code: 'RECURSO_NAO_ENCONTRADO',
       },
     });
+
+    expect(patientService.getOne).toHaveBeenCalledWith(999);
+    expect(
+      medicalRecordsRepository.getMedicalRecordsByPatient,
+    ).not.toHaveBeenCalled();
   });
 
   it('recusa leitura quando token de usuário está sem sub', async () => {

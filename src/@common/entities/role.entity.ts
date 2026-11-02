@@ -9,9 +9,9 @@ import {
 import { User } from './user.entity';
 
 export const ROLES = {
-  ADMIN: 'ADMIN',
-  SECRETARY: 'SECRETARY',
-  DOCTOR: 'DOCTOR',
+  ADMIN: 'admin',
+  SECRETARY: 'secretary',
+  DOCTOR: 'doctor',
 } as const;
 
 export type RoleEnum = (typeof ROLES)[keyof typeof ROLES];

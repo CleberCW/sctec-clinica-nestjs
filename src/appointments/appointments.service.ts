@@ -40,10 +40,31 @@ export class AppointmentsService {
       );
     }
 
-    const weekDay = startAt.getUTCDay();
+    const localParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Sao_Paulo',
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(startAt);
+
+    const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+      localParts.find((part) => part.type === type)?.value;
+
+    const weekdays: Record<string, number> = {
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
+    };
+
+    const weekDay = weekdays[getPart('weekday') ?? ''];
 
     const appointmentMinutes =
-      startAt.getUTCHours() * 60 + startAt.getUTCMinutes();
+      Number(getPart('hour')) * 60 + Number(getPart('minute'));
 
     if (!doctorSchedules || doctorSchedules.length === 0) {
       throw new DomainError(
@@ -57,13 +78,6 @@ export class AppointmentsService {
         continue;
       }
 
-      if (appointmentMinutes % schedule.slotDurationMinutes !== 0) {
-        throw new DomainError(
-          'O horário do agendamento não coincide com a duração dos slots do médico.',
-          ERROR_CODE.HORARIO_FORA_DA_ESCALA,
-        );
-      }
-
       const scheduleStartMinutes = toAbsoluteDayMinutes(schedule.startTime);
 
       const scheduleEndMinutes = toAbsoluteDayMinutes(schedule.endTime);
@@ -71,6 +85,7 @@ export class AppointmentsService {
       const appointmentEndMinutes =
         appointmentMinutes + schedule.slotDurationMinutes;
 
+      // Verifica se o atendimento cabe integralmente no turno.
       if (
         appointmentMinutes < scheduleStartMinutes ||
         appointmentEndMinutes > scheduleEndMinutes
@@ -78,11 +93,16 @@ export class AppointmentsService {
         continue;
       }
 
-      const endAt = new Date(
-        startAt.getTime() + schedule.slotDurationMinutes * 60000,
-      );
+      // Alinha os slots a partir do início do turno.
+      if (
+        (appointmentMinutes - scheduleStartMinutes) %
+          schedule.slotDurationMinutes !==
+        0
+      ) {
+        continue;
+      }
 
-      return endAt;
+      return new Date(startAt.getTime() + schedule.slotDurationMinutes * 60000);
     }
 
     throw new DomainError(
@@ -157,8 +177,8 @@ export class AppointmentsService {
 
     if (isDoctor && !isAdmin) {
       const doctor = await this.doctorsService.getOne({
-        id: Number(user.sub),
         schedules: false,
+        userId: Number(user.sub),
       });
 
       if (!doctor) {
@@ -197,11 +217,18 @@ export class AppointmentsService {
     const isDoctor = user.data.roles.includes(ROLES.DOCTOR);
     const isAdmin = user.data.roles.includes(ROLES.ADMIN);
 
-    if (isDoctor && !isAdmin && appointment.doctorId !== Number(user.sub)) {
-      throw new DomainError(
-        'Você não tem permissão para acessar este agendamento.',
-        ERROR_CODE.ACESSO_NEGADO,
-      );
+    if (isDoctor && !isAdmin) {
+      const doctor = await this.doctorsService.getOne({
+        userId: Number(user.sub),
+        schedules: false,
+      });
+
+      if (appointment.doctorId !== doctor.id) {
+        throw new DomainError(
+          'Você não tem permissão para acessar este agendamento.',
+          ERROR_CODE.ACESSO_NEGADO,
+        );
+      }
     }
 
     return appointment;
@@ -232,10 +259,11 @@ export class AppointmentsService {
     }
 
     const isAdmin = user.data.roles.includes(ROLES.ADMIN);
-    const isCorrectDoctor =
-      user.data.roles.includes(ROLES.DOCTOR) &&
-      appointment.doctorId === Number(user.sub);
+    const isDoctor = user.data.roles.includes(ROLES.DOCTOR);
     const isSecretary = user.data.roles.includes(ROLES.SECRETARY);
+
+    // getById já validou o vínculo entre o médico e o agendamento.
+    const isCorrectDoctor = isDoctor && !isAdmin;
 
     if (appointment.status === 'scheduled') {
       if (dto.status == 'in_progress') {
